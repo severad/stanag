@@ -2,641 +2,583 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STANAG 6001 - TACTICAL TERMINAL</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
-        :root {
-            --bf-cyan: #00e5ff;
-            --bf-orange: #ff6600;
-            --bg-dark: #020508;
-            --panel-bg: rgba(0, 20, 30, 0.75);
-            --text-main: #cceeff;
-            --danger: #ff3333;
-            --success: #00ff66;
-            --touch-target: 48px; /* Safe mobile touch size */
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow-x: hidden;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* CRT & Glitch Effects */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 999;
-            background-size: 100% 3px, 3px 100%;
-            pointer-events: none;
-        }
-
-        @keyframes flicker {
-            0% { opacity: 0.95; } 5% { opacity: 0.85; } 10% { opacity: 0.95; } 100% { opacity: 1; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            20% { transform: translate(-3px, 2px); }
-            40% { transform: translate(3px, -2px); }
-            60% { transform: translate(-3px, -2px); }
-            80% { transform: translate(3px, 2px); }
-        }
-
-        .crt {
-            animation: flicker 0.15s infinite;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .damage-shake { 
-            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; 
-            border: 2px solid var(--danger) !important; 
-            background: rgba(255,0,0,0.15) !important; 
-        }
-
-        /* Typography & Utilities */
-        .glitch-text { color: var(--bf-cyan); text-shadow: 0 0 5px var(--bf-cyan); text-transform: uppercase; }
-        .orange-accent { color: var(--bf-orange); text-shadow: 0 0 5px var(--bf-orange); }
-        
-        .btn {
-            background: rgba(0, 20, 30, 0.8);
-            border: 1px solid var(--bf-cyan);
-            color: var(--bf-cyan);
-            padding: 12px 20px;
-            min-height: var(--touch-target);
-            font-family: inherit;
-            font-size: 1.1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn:hover, .btn:active { background: var(--bf-cyan); color: var(--bg-dark); box-shadow: 0 0 15px var(--bf-cyan); }
-        
-        /* Layout - Boot Screen */
-        #boot-screen {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 100%; padding: 1rem; text-align: center; overflow-y: auto;
-        }
-        .level-selector { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; width: 100%; max-width: 800px; margin-top: 2rem; }
-        .level-card {
-            border: 2px solid rgba(0, 229, 255, 0.3); background: rgba(0, 20, 30, 0.8);
-            padding: 1.5rem; flex: 1 1 250px; cursor: pointer; transition: all 0.2s;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 120px;
-        }
-        .level-card:hover, .level-card:active { border-color: var(--bf-cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); }
-
-        /* Layout - Main UI */
-        #main-ui { display: none; flex-direction: column; height: 100%; width: 100%; }
-        
-        /* Header & Stats */
-        header {
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
-            padding: 1rem; border-bottom: 1px solid var(--bf-cyan); background: rgba(0, 10, 15, 0.95);
-            gap: 1rem;
-        }
-        .header-title h2 { font-size: 1.2rem; }
-        .header-title p { font-size: 0.7rem; opacity: 0.7; }
-        
-        .hud-stats { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
-        .stat-box { display: flex; flex-direction: column; }
-        .stat-label { font-size: 0.7rem; color: var(--bf-orange); margin-bottom: 2px; }
-        .stat-value { font-size: 1.2rem; color: var(--bf-cyan); text-shadow: 0 0 5px var(--bf-cyan); }
-        
-        .hp-container { width: 150px; }
-        .hp-bar-bg { width: 100%; height: 12px; border: 1px solid var(--bf-cyan); background: #000; position: relative; }
-        .hp-bar-fill { height: 100%; background: var(--bf-cyan); width: 100%; transition: width 0.3s, background-color 0.3s; }
-        
-        /* Navigation (Responsive Flex Wrap) */
-        nav { display: flex; flex-wrap: wrap; border-bottom: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0, 15, 25, 0.9); }
-        .nav-tab {
-            flex: 1 1 50%; /* 2 items per row on mobile */
-            text-align: center; cursor: pointer; padding: 12px 5px;
-            border-right: 1px solid rgba(0, 229, 255, 0.2); border-bottom: 1px solid rgba(0, 229, 255, 0.2);
-            color: rgba(204, 238, 255, 0.5); font-size: 0.9rem; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; min-height: var(--touch-target);
-        }
-        .nav-tab.active { color: var(--bf-cyan); background: rgba(0, 229, 255, 0.1); border-bottom: 2px solid var(--bf-cyan); text-shadow: 0 0 5px var(--bf-cyan); }
-
-        /* Main Content Area */
-        main { flex: 1; overflow-y: auto; padding: 1.5rem 1rem; position: relative; -webkit-overflow-scrolling: touch; }
-        .tab-content { display: none; max-width: 1000px; margin: 0 auto; animation: fadeUp 0.3s ease-out; }
-        .tab-content.active { display: block; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Briefing */
-        .briefing-box { background: var(--panel-bg); padding: 1.5rem; border: 1px solid var(--bf-cyan); }
-        
-        /* Armory Grid (Responsive) */
-        .armory-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
-        .armory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
-        .flashcard { background: transparent; height: 100px; perspective: 1000px; cursor: pointer; }
-        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.5s; transform-style: preserve-3d; }
-        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back {
-            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-            display: flex; align-items: center; justify-content: center; padding: 0.5rem;
-            border: 1px solid var(--bf-cyan); background: var(--panel-bg); font-size: 0.9rem;
-        }
-        .flashcard-back { background: rgba(255, 102, 0, 0.15); border-color: var(--bf-orange); transform: rotateY(180deg); color: var(--bf-orange); }
-
-        /* Intel */
-        .intel-text { background: rgba(0,0,0,0.6); padding: 1.5rem; border-left: 3px solid var(--bf-cyan); margin-bottom: 1.5rem; line-height: 1.5; font-size: 0.95rem; }
-        .intel-question { margin-bottom: 1.5rem; background: var(--panel-bg); padding: 1rem; border: 1px solid rgba(0, 229, 255, 0.2); }
-        .intel-options { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-        .intel-opt-btn { 
-            text-align: left; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--bf-cyan); 
-            color: var(--text-main); cursor: pointer; min-height: var(--touch-target); font-family: inherit; font-size: 0.9rem;
-        }
-        .intel-opt-btn:disabled { opacity: 0.8; cursor: not-allowed; }
-        .intel-explanation { display: none; margin-top: 1rem; padding: 1rem; background: rgba(255, 102, 0, 0.1); border-left: 3px solid var(--bf-orange); color: var(--bf-orange); font-size: 0.85rem; }
-
-        /* Combat */
-        .combat-status { margin-bottom: 1rem; font-size: 1.1rem; text-align: center; }
-        .combat-q-box { background: var(--panel-bg); border: 2px solid var(--bf-cyan); padding: 1.5rem; box-shadow: 0 0 15px rgba(0, 229, 255, 0.1); }
-        .combat-question-text { font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.4; }
-        .combat-options { display: flex; flex-direction: column; gap: 0.8rem; }
-        .combat-opt-btn {
-            text-align: left; padding: 15px; font-size: 1rem; border: 1px solid rgba(0, 229, 255, 0.5); 
-            background: rgba(0,0,0,0.7); color: white; cursor: pointer; min-height: var(--touch-target); font-family: inherit;
-        }
-        .combat-opt-btn:active { background: rgba(0, 229, 255, 0.3); }
-
-        /* Tactical Modal (Responsive) */
-        #tactical-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 1000; display: none;
-            justify-content: center; align-items: center; padding: 1rem;
-        }
-        .modal-content {
-            background: var(--bg-dark); border: 2px solid var(--bf-cyan);
-            width: 100%; max-width: 500px; padding: 1.5rem; box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
-            max-height: 90vh; overflow-y: auto;
-        }
-        .modal-content.wrong { border-color: var(--danger); box-shadow: 0 0 20px rgba(255, 51, 51, 0.3); }
-        .modal-header { font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .modal-body { font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; color: #ccc; }
-
-        /* --- MEDIA QUERIES FOR MOBILE --- */
-        @media (max-width: 768px) {
-            .header-title h2 { font-size: 1rem; }
-            .hud-stats { gap: 1rem; }
-            .hp-container { width: 100px; }
-            .level-card { flex-basis: 40%; }
-        }
-
-        @media (max-width: 480px) {
-            header { flex-direction: column; align-items: flex-start; }
-            .hud-stats { width: 100%; justify-content: space-between; }
-            .hp-container { width: auto; flex: 1; margin-left: 10px; }
-            
-            .nav-tab { flex: 1 1 50%; font-size: 0.8rem; }
-            
-            .level-card { flex-basis: 100%; }
-            .armory-grid { grid-template-columns: repeat(2, 1fr); }
-            
-            main { padding: 1rem 0.5rem; }
-            .briefing-box, .combat-q-box, .intel-text, .intel-question { padding: 1rem; }
-            
-            .glitch-text { font-size: 1.2rem; }
-            #boot-screen h1 { font-size: 2rem !important; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101510">
+<title>STANAG Ops | Battlefield English Trainer</title>
+<style>
+:root {
+  --bg:#101510; --panel:#1b211b; --panel2:#242c23;
+  --green:#b7f34a; --green2:#83b82b; --text:#edf1e8;
+  --muted:#a0ab9b; --red:#f47770; --border:#394436;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.55}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.topbar{padding:17px 5%;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;background:#141a13}
+.logo{font-size:20px;font-weight:900;letter-spacing:2px}
+.logo span{color:var(--green)}
+.status{color:var(--green);font-size:12px;letter-spacing:2px}
+.container{width:min(1050px,92%);margin:auto;padding:32px 0 65px}
+.hero{padding:35px 0 28px}
+.eyebrow{color:var(--green);font-weight:bold;font-size:12px;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:clamp(32px,6vw,59px);line-height:1.03;margin:15px 0}
+h1 span{color:var(--green)}
+h2{font-size:25px;margin:0 0 12px}
+h3{margin-top:0}
+p{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.levels,.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.modes{grid-template-columns:repeat(2,minmax(0,1fr))}
+.level-card,.mode-card{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:10px;text-align:left;padding:20px;transition:.2s}
+.level-card:hover,.mode-card:hover{border-color:var(--green);transform:translateY(-2px)}
+.level-card.active,.mode-card.active{border-color:var(--green);background:#293421;box-shadow:inset 0 0 0 1px var(--green)}
+.level-number{font-size:30px;font-weight:900;color:var(--green)}
+.card-title{font-size:17px;font-weight:bold;display:block;margin:8px 0}
+.small{font-size:12px;color:var(--muted)}
+.primary,.secondary,.option,.navbtn{border-radius:7px;padding:12px 17px;border:1px solid var(--border);font-weight:bold}
+.primary{background:var(--green);color:#15200e;border-color:var(--green)}
+.primary:hover{background:#c9ff70}
+.secondary,.navbtn{background:var(--panel2);color:var(--text)}
+.secondary:hover,.navbtn:hover{border-color:var(--green)}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.pill{border:1px solid var(--border);border-radius:99px;padding:5px 12px;color:var(--green);font-size:12px;font-weight:bold}
+.progress{height:6px;background:#343d30;border-radius:9px;overflow:hidden;margin:12px 0 20px}
+.progress-bar{height:100%;background:var(--green);width:0%;transition:width .2s}
+.question{font-size:22px;font-weight:bold;margin:20px 0}
+.options{display:grid;gap:10px}
+.option{background:var(--panel2);color:var(--text);text-align:left;width:100%;padding:15px}
+.option:hover:not(:disabled){border-color:var(--green)}
+.option.correct{border-color:var(--green);background:#263b1d}
+.option.wrong{border-color:var(--red);background:#402522}
+.feedback{padding:13px;border-radius:7px;margin-top:15px;background:var(--panel2)}
+.feedback.good{border-left:3px solid var(--green)}
+.feedback.bad{border-left:3px solid var(--red)}
+.hidden{display:none!important}
+.word-card{min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.word{font-size:clamp(28px,5vw,42px);font-weight:900;color:var(--green);margin:12px 0}
+.translation{font-size:22px}
+.example{font-style:italic;color:var(--muted);max-width:650px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--panel2);padding:15px;border-radius:8px}
+.stat strong{display:block;font-size:25px;color:var(--green)}
+.stat span{font-size:12px;color:var(--muted)}
+.reading{font-size:17px;line-height:1.9;white-space:pre-line;border-left:3px solid var(--green);padding-left:18px}
+label{display:block;margin:12px 0 5px;font-size:14px;color:var(--muted)}
+input{width:100%;padding:12px;background:#111711;border:1px solid var(--border);color:var(--text);border-radius:7px}
+footer{text-align:center;border-top:1px solid var(--border);padding:25px;color:var(--muted);font-size:12px}
+.notice{font-size:12px;color:var(--muted)}
+@media(max-width:650px){.levels{grid-template-columns:1fr}.modes{grid-template-columns:1fr}.container{padding-top:15px}.panel{padding:17px}.topbar{padding:14px 4%}.stats{grid-template-columns:1fr 1fr}.status{font-size:10px}}
+</style>
 </head>
 <body>
-    <div class="crt" id="app-container">
-        <!-- BOOT SCREEN -->
-        <div id="boot-screen">
-            <h1 class="glitch-text" style="font-size: 3rem; margin-bottom: 0.5rem;">STANAG OS</h1>
-            <p class="orange-accent">TACTICAL PREPARATION PROTOCOL</p>
-            <div class="level-selector">
-                <div class="level-card" onclick="initSystem(1)">
-                    <h2 class="glitch-text">STANAG 1</h2>
-                    <p style="margin-top: 0.5rem; color: #888; font-size: 0.9rem;">Survival</p>
-                    <p style="font-size: 0.8rem; color: var(--bf-cyan); margin-top: 1rem;">[ TAP TO LOAD ]</p>
-                </div>
-                <div class="level-card" onclick="initSystem(2)">
-                    <h2 class="glitch-text">STANAG 2</h2>
-                    <p style="margin-top: 0.5rem; color: #888; font-size: 0.9rem;">Functional</p>
-                    <p style="font-size: 0.8rem; color: var(--bf-cyan); margin-top: 1rem;">[ TAP TO LOAD ]</p>
-                </div>
-                <div class="level-card" onclick="initSystem(3)">
-                    <h2 class="glitch-text" style="color: var(--bf-orange);">STANAG 3</h2>
-                    <p style="margin-top: 0.5rem; color: #888; font-size: 0.9rem;">Professional</p>
-                    <p style="font-size: 0.8rem; color: var(--bf-orange); margin-top: 1rem;">[ TAP TO LOAD ]</p>
-                </div>
-            </div>
-        </div>
+<header class="topbar">
+  <div class="logo">STANAG <span>OPS</span></div>
+  <div class="status">ENGLISH TRAINING SYSTEM</div>
+</header>
 
-        <!-- MAIN UI -->
-        <div id="main-ui">
-            <header>
-                <div class="header-title">
-                    <h2 class="glitch-text" id="hud-level-title">STANAG X</h2>
-                    <p>SECURE CONNECTION</p>
-                </div>
-                <div class="hud-stats">
-                    <div class="stat-box">
-                        <span class="stat-label">RANK</span>
-                        <span class="stat-value" id="hud-rank">Pvt.</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">XP</span>
-                        <span class="stat-value" id="hud-xp">0</span>
-                    </div>
-                    <div class="stat-box hp-container">
-                        <span class="stat-label">ARMOR (HP)</span>
-                        <div class="hp-bar-bg">
-                            <div class="hp-bar-fill" id="hud-hp-bar"></div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+<main class="container">
+  <section class="hero">
+    <div class="eyebrow">Military English • Training simulator</div>
+    <h1>PREPARE.<br><span>DEPLOY.</span> COMMUNICATE.</h1>
+    <p>Trénuj angličtinu v prostředí vojenských operací. Vyber si úroveň STANAG, zaměř se na slabiny a zlepšuj své výsledky.</p>
+  </section>
 
-            <nav>
-                <div class="nav-tab active" onclick="switchTab('briefing')">BRIEFING</div>
-                <div class="nav-tab" onclick="switchTab('armory')">ARMORY</div>
-                <div class="nav-tab" onclick="switchTab('intel')">INTEL</div>
-                <div class="nav-tab" onclick="switchTab('combat')">COMBAT</div>
-            </nav>
-
-            <main>
-                <!-- BRIEFING -->
-                <div id="tab-briefing" class="tab-content active">
-                    <h2 class="glitch-text" style="margin-bottom: 1rem;">MISSION BRIEFING</h2>
-                    <div class="briefing-box">
-                        <h3 class="orange-accent" id="briefing-title" style="margin-bottom: 1rem;"></h3>
-                        <p id="briefing-text" style="line-height: 1.6; font-size: 0.95rem; color: #ddd;"></p>
-                    </div>
-                </div>
-
-                <!-- ARMORY -->
-                <div id="tab-armory" class="tab-content">
-                    <div class="armory-header">
-                        <h2 class="glitch-text">ARMORY DB</h2>
-                        <span class="orange-accent" style="font-size: 0.8rem;" id="armory-count"></span>
-                    </div>
-                    <p style="font-size:0.8rem; color:#888; margin-bottom:1rem;">Tap cards to reveal translation.</p>
-                    <div class="armory-grid" id="armory-grid"></div>
-                </div>
-
-                <!-- INTEL -->
-                <div id="tab-intel" class="tab-content">
-                    <h2 class="glitch-text" style="margin-bottom: 1rem;">INTERCEPTED COMMS</h2>
-                    <div class="intel-text" id="intel-text"></div>
-                    <div id="intel-questions"></div>
-                </div>
-
-                <!-- COMBAT -->
-                <div id="tab-combat" class="tab-content">
-                    <div class="combat-status glitch-text">ENGAGEMENT: <span id="combat-progress" class="orange-accent"></span></div>
-                    <div class="combat-q-box">
-                        <div class="combat-question-text" id="combat-question"></div>
-                        <div class="combat-options" id="combat-options"></div>
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <!-- TACTICAL MODAL (Feedback) -->
-        <div id="tactical-modal">
-            <div class="modal-content" id="modal-box">
-                <div class="modal-header">
-                    <span id="modal-icon" style="font-weight: bold;"></span>
-                    <span class="glitch-text" id="modal-title">ANALYSIS</span>
-                </div>
-                <div class="modal-body" id="modal-body"></div>
-                <button class="btn" onclick="nextCombatRound()">ACKNOWLEDGE</button>
-            </div>
-        </div>
+  <section id="setup" class="panel">
+    <div class="eyebrow">01 / Select your level</div>
+    <h2>Jakou úroveň chceš procvičovat?</h2>
+    <p>Obtížnost výukových materiálů je orientační a není oficiálním STANAG testem.</p>
+    <div class="levels">
+      <button class="level-card active" data-level="1">
+        <span class="level-number">01</span>
+        <span class="card-title">STANAG 1</span>
+        <span class="small">Základní komunikace, jednoduché pokyny, každodenní situace.</span>
+      </button>
+      <button class="level-card" data-level="2">
+        <span class="level-number">02</span>
+        <span class="card-title">STANAG 2</span>
+        <span class="small">Samostatná komunikace, operační situace, delší texty.</span>
+      </button>
+      <button class="level-card" data-level="3">
+        <span class="level-number">03</span>
+        <span class="card-title">STANAG 3</span>
+        <span class="small">Pokročilá komunikace, analýza, plánování a komplexní texty.</span>
+      </button>
     </div>
+    <div class="actions">
+      <button id="continueBtn" class="primary">POKRAČOVAT DO VÝCVIKU →</button>
+    </div>
+  </section>
 
-    <script>
-        /* --- MASSIVE PROCEDURAL DATA GENERATORS --- */
-        // Generator for 90 Armory words per level based on real seeds
-        function generateFlashcards(level) {
-            const seeds = {
-                1: [
-                    ["Weapon", "Zbraň"], ["Base", "Základna"], ["Target", "Cíl"], ["Soldier", "Voják"], ["Uniform", "Uniforma"],
-                    ["Tent", "Stan"], ["Ammunition", "Munice"], ["Boot", "Bota"], ["Helmet", "Helma"], ["Radio", "Vysílačka"]
-                ],
-                2: [
-                    ["Reconnaissance", "Průzkum"], ["Casualty", "Zraněný/Ztráta"], ["Deployment", "Nasazení"], ["Ambush", "Léčka"], ["Supplies", "Zásoby"],
-                    ["Evacuation", "Evakuace"], ["Checkpoint", "Kontrolní bod"], ["Artillery", "Dělostřelectvo"], ["Reinforcements", "Posily"], ["Perimeter", "Obvod"]
-                ],
-                3: [
-                    ["Deterrence", "Odstrašení"], ["Insurgency", "Povstání"], ["Proliferation", "Šíření zbraní"], ["Bilateral", "Dvoustranný"], ["Sanctions", "Sankce"],
-                    ["Asymmetrical warfare", "Asymetrický boj"], ["Doctrine", "Doktrína"], ["Insurgent", "Povstalec"], ["Ratification", "Schválení/Ratifikace"], ["Logistics", "Logistika"]
-                ]
-            };
-            
-            const suffixes = ["(Alpha)", "(Bravo)", "(Charlie)", "(Delta)", "(Echo)", "(Foxtrot)", "(Golf)", "(Hotel)", "(India)"];
-            let cards = [];
-            let seedList = seeds[level];
-            
-            // Expand strictly to 90 items to fulfill "90 armory words" requirement
-            for(let i=0; i < 90; i++) {
-                let seed = seedList[i % seedList.length];
-                let variant = suffixes[Math.floor(i / 10) % suffixes.length];
-                // First 10 are pure seeds, the rest are procedural variants to show database volume
-                if(i < 10) cards.push({ en: seed[0], cs: seed[1] });
-                else cards.push({ en: `${seed[0]} ${variant} [ID:${i}]`, cs: `${seed[1]} ${variant}` });
-            }
-            return cards;
-        }
+  <section id="menu" class="hidden">
+    <div class="toolbar">
+      <div><div class="eyebrow">02 / Training module</div><h2 id="menuTitle">STANAG 1</h2></div>
+      <button id="changeLevel" class="secondary">Změnit úroveň</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><strong id="statDone">0</strong><span>Zodpovězené otázky</span></div>
+      <div class="stat"><strong id="statAccuracy">0%</strong><span>Úspěšnost</span></div>
+      <div class="stat"><strong id="statWords">50</strong><span>Slovíček v úrovni</span></div>
+    </div>
+    <div class="modes">
+      <button class="mode-card" data-mode="theory">
+        <span class="eyebrow">MODULE 01</span><span class="card-title">📡 Teorie</span>
+        <span class="small">Vysvětlení gramatiky, frází a komunikačních pravidel.</span>
+      </button>
+      <button class="mode-card" data-mode="vocab">
+        <span class="eyebrow">MODULE 02</span><span class="card-title">🎯 Slovní zásoba</span>
+        <span class="small">Minimálně 50 výrazů, kartičky a překladový test.</span>
+      </button>
+      <button class="mode-card" data-mode="reading">
+        <span class="eyebrow">MODULE 03</span><span class="card-title">📄 Čtení s porozuměním</span>
+        <span class="small">Vojenské situace, operační hlášení a kontrolní otázky.</span>
+      </button>
+      <button class="mode-card" data-mode="grammar">
+        <span class="eyebrow">MODULE 04</span><span class="card-title">⌁ Gramatika</span>
+        <span class="small">Procvičování časů, předložek, modálních sloves a vět.</span>
+      </button>
+    </div>
+    <div class="actions"><button id="resetProgress" class="secondary">Resetovat statistiky</button></div>
+  </section>
 
-        // Generator for 120 Combat Questions per level
-        function generateCombatQuestions(level) {
-            const seedQuestions = {
-                1: [
-                    {q: "Where ___ the soldiers going right now?", opts: ["is", "are", "am", "be"], ans: 1, exp: "Slovo 'soldiers' je v množném čísle a 'right now' ukazuje na přítomný čas průběhový, proto se použije 'are'."},
-                    {q: "The commander ___ his weapon every morning.", opts: ["cleans", "cleaning", "clean", "cleaned"], ans: 0, exp: "'Every morning' značí pravidelný děj. Pro 3. osobu jednotného čísla (The commander - on) přidáváme koncovku '-s'."},
-                    {q: "We must stay ___ the base tonight.", opts: ["on", "in", "at", "to"], ans: 2, exp: "Se slovem 'base' ve smyslu vojenské základny jako lokace se pojí předložka 'at'."}
-                ],
-                2: [
-                    {q: "If the patrol ___ ambushed, they will call for immediate backup.", opts: ["is", "will be", "would be", "was"], ans: 0, exp: "Jedná se o první kondicionál (reálná podmínka v budoucnosti). Ve vedlejší větě po 'if' musí být přítomný čas (is)."},
-                    {q: "HQ ordered the infantry ___ the perimeter immediately.", opts: ["securing", "to secure", "secure", "secured"], ans: 1, exp: "Sloveso 'order' vyžaduje vazbu 'order somebody TO DO something' (přikázat někomu, aby něco udělal)."},
-                    {q: "They ___ defending this specific sector since 0400 hours.", opts: ["are", "were", "have been", "had been"], ans: 2, exp: "Předložka 'since' s časovým údajem indikuje předpřítomný čas průběhový (have been defending), protože děj začal v minulosti a stále trvá."}
-                ],
-                3: [
-                    {q: "The peace treaty will not be formally ratified ___ all coalition members agree to the terms.", opts: ["if", "provided that", "unless", "as long as"], ans: 2, exp: "'Unless' znamená 'pokud ne'. Smlouva nebude ratifikována, POKUD všechny státy NEsouhlasí. 'If' by změnilo význam na nesmysl."},
-                    {q: "Had the initial intelligence been accurate, the covert operation ___ highly successful.", opts: ["will be", "would be", "would have been", "had been"], ans: 2, exp: "Třetí kondicionál (nerealizovaná minulost). Věta využívá inverzi 'Had the intelligence been...' místo 'If the intelligence had been...'. Hlavní věta vyžaduje 'would have + příčestí minulé'."},
-                    {q: "The general's updated strategy was absolutely instrumental ___ preventing a full-scale escalation.", opts: ["in", "for", "to", "at"], ans: 0, exp: "Pevná anglická vazba je 'to be instrumental IN doing something' (mít zásadní podíl NA něčem)."}
-                ]
-            };
+  <section id="workspace" class="hidden">
+    <div class="toolbar">
+      <button id="backMenu" class="secondary">← Zpět do menu</button>
+      <span class="pill" id="modulePill">MODULE</span>
+      <span class="pill" id="levelPill">STANAG 1</span>
+    </div>
+    <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+    <div id="workContent"></div>
+  </section>
+</main>
+<footer>
+  STANAG OPS • Neoficiální vzdělávací pomůcka • Není spojena s EA ani Battlefield.
+  <br>Obsah je určen k procvičování angličtiny, nikoliv k reálnému operačnímu použití.
+</footer>
 
-            let questions = [];
-            let seeds = seedQuestions[level];
-            
-            // Generate strictly 120 questions
-            for(let i=0; i<120; i++) {
-                if(i < seeds.length) {
-                    questions.push(seeds[i]);
-                } else {
-                    // Procedural generation to fill the database
-                    let qType = i % 3;
-                    questions.push({
-                        q: `[Tactical Protocol #${200+i}] Identify the correct missing parameter for operation integrity: The squad ___ moving to WP-${i}.`,
-                        opts: ["is", "are", "will", "have"],
-                        ans: 1,
-                        exp: `Procedurální záznam #${i}: 'Squad' se v tomto kontextu (členové družstva) pojí s množným číslem 'are'. (Tato otázka byla vygenerována databází).`
-                    });
-                }
-            }
-            return questions;
-        }
+<script>
+"use strict";
 
-        const intelData = {
-            1: {
-                text: "ROUTINE ORDER #45\nFrom: Base Commander\nTo: All Personnel\n\nBreakfast is served in the mess hall at 06:00. Physical training (PT) starts outside at 07:30. All soldiers must wear correct PT uniform. Do not bring any weapons or ammunition to the mess hall. Evening roll call is at 21:00.",
-                questions: [
-                    {q: "When is the morning physical training?", opts: ["06:00", "07:30", "21:00"], ans: 1, exp: "Text jasně uvádí 'Physical training (PT) starts outside at 07:30'."},
-                    {q: "What is prohibited in the mess hall?", opts: ["Uniforms", "Eating", "Weapons"], ans: 2, exp: "V textu je zákaz: 'Do not bring any weapons or ammunition to the mess hall'."}
-                ]
-            },
-            2: {
-                text: "SITREP - 1400 HRS\nUnit: Alpha Company\nLocation: Grid 456-789\n\nAlpha Company reached Checkpoint Charlie without incident. However, enemy scout activity was observed 2 km north of the checkpoint. Casualties: zero. We are holding position and requesting immediate aerial reconnaissance to confirm enemy strength before proceeding to the primary objective.",
-                questions: [
-                    {q: "Where was the enemy observed?", opts: ["At Checkpoint Charlie", "At the primary objective", "North of the checkpoint"], ans: 2, exp: "Zpráva říká: 'enemy scout activity was observed 2 km north of the checkpoint'."},
-                    {q: "What is Alpha Company requesting?", opts: ["Medevac", "Aerial reconnaissance", "Artillery strike"], ans: 1, exp: "Jednotka žádá: 'requesting immediate aerial reconnaissance' (letecký průzkum)." }
-                ]
-            },
-            3: {
-                text: "INTELLIGENCE SUMMARY - REGION BRAVO\nThe ongoing insurgency in the volatile southern province has severely undermined bilateral efforts to establish a transitional government. While the insurgent factions lack sophisticated conventional weaponry, their reliance on asymmetrical warfare tactics—primarily improvised explosive devices (IEDs) and targeted assassinations—have inflicted significant psychological attrition on coalition forces. Consequently, a rapid shift in strategic doctrine emphasizing counter-insurgency (COIN) methodology and robust civil-military cooperation (CIMIC) is deemed paramount for regional stability.",
-                questions: [
-                    {q: "What prevents the establishment of a transitional government?", opts: ["Lack of conventional weaponry", "The ongoing insurgency", "Bilateral efforts"], ans: 1, exp: "První věta uvádí, že 'ongoing insurgency... has severely undermined bilateral efforts to establish a transitional government'."},
-                    {q: "Which specific tactics are the insurgents relying on?", opts: ["Conventional frontal assaults", "Cyber warfare and propaganda", "Asymmetrical warfare like IEDs"], ans: 2, exp: "Text explicitně zmiňuje 'asymmetrical warfare tactics—primarily improvised explosive devices (IEDs)...'"}
-                ]
-            }
-        };
+/* Každá úroveň má 50 vlastních slovíček.
+   Formát: anglický výraz | český překlad | příklad v angličtině */
+const vocab = {
+1: `soldier|voják|The soldier is ready.
+unit|jednotka|Our unit is here.
+base|základna|Return to the base.
+camp|tábor|The camp is safe.
+mission|mise|The mission starts today.
+team|tým|The team is ready.
+leader|velitel|The leader gives an order.
+order|rozkaz|Follow the order.
+radio|vysílačka|Use the radio.
+message|zpráva|I have a message.
+report|hlášení|Send the report.
+map|mapa|Check the map.
+road|silnice|The road is clear.
+bridge|most|The bridge is damaged.
+building|budova|Enter the building.
+room|místnost|The room is empty.
+door|dveře|Close the door.
+window|okno|The window is open.
+vehicle|vozidlo|The vehicle is ready.
+truck|nákladní automobil|The truck is moving.
+tank|tank|The tank is near the base.
+aircraft|letadlo|The aircraft is above us.
+helicopter|vrtulník|The helicopter is landing.
+ship|loď|The ship is at sea.
+water|voda|We need water.
+food|jídlo|The food is ready.
+medical|zdravotnický|We need medical support.
+doctor|lékař|The doctor is here.
+wound|rána|The wound is small.
+injured|zraněný|One soldier is injured.
+safe|v bezpečí|The area is safe.
+danger|nebezpečí|There is danger ahead.
+enemy|nepřítel|The enemy is far away.
+friendly|spřátelený|A friendly unit is nearby.
+location|poloha|Report your location.
+position|pozice|Hold your position.
+north|sever|Move north.
+south|jih|The road goes south.
+east|východ|The village is east of us.
+west|západ|Move west.
+left|vlevo|Turn left.
+right|vpravo|Turn right.
+stop|zastavit|Stop the vehicle.
+move|pohybovat se|Move slowly.
+wait|čekat|Wait here.
+follow|následovat|Follow the team.
+return|vrátit se|Return to base.
+ready|připravený|We are ready.
+help|pomoc|We need help.
+understand|rozumět|I understand the order.`.split("\n").map(x=>x.split("|")),
 
-        const briefings = {
-            1: { title: "BASIC SURVIVAL (SLP 1)", text: "Základní úroveň. Očekává se schopnost rozumět a používat jednoduché fráze týkající se přežití, základní orientace v čase a prostoru, a jednoduché vojenské povely. Zaměř se na slovní zásobu denní rutiny." },
-            2: { title: "FUNCTIONAL PATROL (SLP 2)", text: "Funkční úroveň. Voják musí být schopen popsat události v minulosti, přítomnosti i budoucnosti. Klíčová je schopnost podat hlášení (SITREP), popsat incident a orientovat se v rutinních vojenských rozkazech." },
-            3: { title: "ADVANCED COMMAND (SLP 3)", text: "Profesionální úroveň. Vyžaduje se schopnost argumentovat, obhajovat názor a orientovat se ve složitých textech (doktríny NATO, mezinárodní vztahy, zprávy rozvědky). Důraz na složité gramatické struktury (kondicionály, trpný rod)." }
-        };
+2: `objective|cíl|The unit reached its objective.
+deployment|nasazení|Deployment begins at dawn.
+reinforcement|posila|Reinforcements arrived yesterday.
+headquarters|velitelství|Report to headquarters.
+checkpoint|kontrolní stanoviště|The checkpoint is open.
+patrol|hlídka|The patrol returned safely.
+perimeter|obvod obrany|Secure the perimeter.
+surveillance|sledování|Surveillance continues overnight.
+intelligence|zpravodajské informace|The intelligence report is ready.
+assessment|vyhodnocení|Complete the initial assessment.
+supply|zásobování|The supply route is open.
+logistics|logistika|Logistics supports the unit.
+equipment|vybavení|The equipment needs inspection.
+maintenance|údržba|Maintenance starts tomorrow.
+transport|přeprava|Transport is available.
+evacuation|evakuace|The evacuation is complete.
+casualty|ztráta na životech / zraněný|The report lists one casualty.
+emergency|nouzová situace|An emergency was reported.
+shelter|úkryt|The civilians entered the shelter.
+civilian|civilista|The civilians left the area.
+authority|orgán / pravomoc|Local authorities were informed.
+agreement|dohoda|Both sides signed the agreement.
+ceasefire|příměří|The ceasefire remains in effect.
+conflict|konflikt|The conflict affected the region.
+border|hranice|The convoy crossed the border.
+territory|území|The unit entered the territory.
+route|trasa|Choose an alternative route.
+destination|cílové místo|The destination is confirmed.
+departure|odjezd|Departure is scheduled for six.
+arrival|příjezd|Arrival was delayed.
+delay|zpoždění|Weather caused a delay.
+condition|stav / podmínka|The road is in poor condition.
+damage|poškození|The vehicle suffered damage.
+repair|oprava|The repair will take two hours.
+request|žádost|Submit a request for supplies.
+confirm|potvrdit|Please confirm receipt.
+inform|informovat|Inform the team leader.
+require|vyžadovat|The task requires more time.
+provide|poskytnout|Provide medical assistance.
+prevent|zabránit|The barrier may prevent access.
+increase|zvýšit|Visibility may increase later.
+reduce|snížit|Reduce unnecessary radio traffic.
+available|dostupný|Additional vehicles are available.
+reliable|spolehlivý|We need reliable information.
+accurate|přesný|The coordinates must be accurate.
+temporary|dočasný|This is a temporary position.
+significant|významný|There was significant damage.
+likely|pravděpodobný|Further delays are likely.
+despite|navzdory|Despite the rain, the convoy moved.
+according to|podle|According to the report, the route is clear.`.split("\n").map(x=>x.split("|")),
 
-        /* --- APPLICATION STATE --- */
-        let currentLevel = 0;
-        let pState = { hp: 100, xp: 0, rank: "Pvt." };
-        let combatPool = [];
-        let sessionQuestions = [];
-        let currentCombatIndex = 0;
-        let SESSION_LENGTH = 10; // Test session length from the 120 pool
+3: `operational capability|operační schopnost|The unit assessed its operational capability.
+situational awareness|povědomí o situaci|Situational awareness remains essential.
+chain of command|velitelská struktura|Follow the established chain of command.
+rules of engagement|pravidla nasazení|Personnel must understand the rules of engagement.
+mission readiness|připravenost k misi|Mission readiness is reviewed weekly.
+force protection|ochrana sil|Force protection measures were updated.
+risk assessment|vyhodnocení rizik|The risk assessment identified several concerns.
+contingency plan|záložní plán|The contingency plan was activated.
+strategic objective|strategický cíl|The strategic objective remains unchanged.
+operational environment|operační prostředí|The operational environment is complex.
+intelligence gathering|shromažďování informací|Intelligence gathering continued.
+reconnaissance|průzkum|Reconnaissance provided useful information.
+interoperability|spolupráce systémů a jednotek|Interoperability improves joint operations.
+coordination|koordinace|Coordination between teams is necessary.
+deconfliction|odstranění vzájemných konfliktů|Deconfliction prevents overlapping activities.
+deployment order|rozkaz k nasazení|The deployment order was revised.
+command structure|struktura velení|The command structure was clarified.
+mission parameters|parametry mise|Mission parameters were reviewed.
+operational requirement|operační požadavek|The operational requirement changed.
+resource allocation|přidělování zdrojů|Resource allocation needs improvement.
+sustainability|udržitelnost|Sustainability affects long-term planning.
+resilience|odolnost|The system demonstrated resilience.
+vulnerability|zranitelnost|The review identified a vulnerability.
+mitigation|zmírnění rizika|Mitigation measures were introduced.
+assessment criteria|kritéria hodnocení|The assessment criteria are clearly defined.
+situational report|situační hlášení|The situational report was distributed.
+intended outcome|zamýšlený výsledek|The intended outcome was achieved.
+unintended consequence|nezamýšlený důsledek|The decision had an unintended consequence.
+strategic planning|strategické plánování|Strategic planning requires reliable data.
+operational constraint|operační omezení|Weather created an operational constraint.
+humanitarian assistance|humanitární pomoc|Humanitarian assistance reached the region.
+displaced persons|vysídlené osoby|Displaced persons received temporary shelter.
+civilian infrastructure|civilní infrastruktura|Civilian infrastructure requires protection.
+negotiation|vyjednávání|Negotiation continued throughout the day.
+mediation|zprostředkování|Mediation helped resolve the dispute.
+compliance|dodržování pravidel|Compliance with regulations is mandatory.
+accountability|odpovědnost za jednání|Accountability improves public trust.
+proportionality|přiměřenost|Proportionality is an important legal principle.
+legitimacy|legitimita|Legitimacy depends on lawful authority.
+authorization|oprávnění / povolení|Authorization must be obtained first.
+assessment|posouzení|The assessment considered several factors.
+implication|důsledek|The implication was not immediately clear.
+feasibility|proveditelnost|The team evaluated the feasibility of the plan.
+priority|priorita|Civilian safety is a priority.
+degradation|zhoršení / snížení výkonu|The system experienced gradual degradation.
+capability gap|mezera ve schopnostech|The analysis identified a capability gap.
+intervention|zásah|The intervention required careful coordination.
+implementation|provedení / implementace|Implementation began after approval.
+safeguard|ochranné opatření|The safeguard reduced the risk.
+comprehensive|komplexní|A comprehensive review was completed.`.split("\n").map(x=>x.split("|"))
+};
 
-        /* --- CORE LOGIC --- */
-        function initSystem(lvl) {
-            currentLevel = lvl;
-            pState = { hp: 100, xp: 0, rank: "Pvt." }; // Reset state
-            
-            document.getElementById('boot-screen').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'flex';
-            document.getElementById('hud-level-title').innerText = `STANAG ${lvl}`;
-            
-            // Setup Briefing
-            document.getElementById('briefing-title').innerText = briefings[lvl].title;
-            document.getElementById('briefing-text').innerText = briefings[lvl].text;
+const theory = {
+1:[
+["Základní rozkazy","Imperativ se používá pro jednoduché pokyny: Move! (Pohyb!), Stop! (Zastav!), Follow me! (Následuj mě!). Záporný rozkaz tvoříme pomocí Don't: Don't move!"],
+["Sloveso TO BE","I am, you are, he/she/it is, we/they are. Příklad: The team is ready. We are safe. Is the road clear?"],
+["Přítomný čas prostý","Používáme pro fakta a pravidelné činnosti. I check the map. He checks the map. U he/she/it přidáváme obvykle -s."],
+["Otázky a negace","Do you understand? Yes, I do. I don't understand. U slovesa be tvoříme otázku prohozením: Are you ready?"],
+["Základní směry a poloha","North = sever, south = jih, left = vlevo, right = vpravo, ahead = vpředu. The base is north of the village."],
+["Číslovky a čas","At six o'clock = v šest hodin. At 0600 hours = v 06:00. Používej jasné časy a v případě nejasností je potvrď."],
+["Žádost o pomoc","I need help. Could you repeat that, please? Please speak slowly. I don't understand the last instruction."],
+["Minulý čas","U pravidelných sloves přidáváme -ed: We checked the map. U nepravidelných sloves: go → went, see → saw, have → had."]
+],
+2:[
+["Přítomný průběhový čas","Tvoříme am/is/are + sloveso s -ing. The unit is moving. Používá se pro právě probíhající děj."],
+["Minulý čas a hlášení","The convoy arrived at 0700. The road was blocked. Minulý čas popisuje dokončené události."],
+["Budoucnost: will a going to","We will send a report. The team is going to leave at dawn. Will často vyjadřuje rozhodnutí nebo předpověď."],
+["Modální slovesa","Must = muset, should = měl by, can = moci, might = možná. You must follow the safety rules. The route might be blocked."],
+["Podmínkové věty 1. typu","If the road is blocked, we will use another route. Po if používáme přítomný čas, ve výsledkové větě will."],
+["Trpný rod","The equipment was inspected. The report has been sent. Důležitý je děj nebo výsledek, ne jeho vykonavatel."],
+["Předložky času a místa","At 0600, on Monday, in the morning; at the checkpoint, in the building, near the bridge."],
+["Nepřímá řeč a hlášení","He said that the road was clear. Převádíme sdělení do souvislého hlášení a dbáme na srozumitelnost."]
+],
+3:[
+["Podmínkové věty 2. a 3. typu","If we had more time, we would conduct a review. If we had checked the data, we might have avoided the error."],
+["Pokročilý trpný rod","The report is believed to be accurate. The decision had been approved before the deployment."],
+["Modální slovesa pro závěry","The delay may have been caused by weather. The report must have been incomplete. Could have vyjadřuje možnost v minulosti."],
+["Přechodníky a spojovací výrazy","Although, whereas, nevertheless, consequently, provided that. They continued, although conditions had deteriorated."],
+["Formální hlášení","Distinguish observation from assessment. Use concise language, clear time references and explicit sources."],
+["Vyjádření nejistoty","The available evidence suggests that... It cannot be ruled out that... The conclusion remains provisional."],
+["Podmínky a výjimky","Unless the route is confirmed, the movement will be delayed. Provided that approval is granted, work can begin."],
+["Shrnutí argumentu","State the issue, evidence, limitations and conclusion. Distinguish verified facts from assumptions."]
+]
+};
 
-            // Setup Armory (90 cards)
-            const cards = generateFlashcards(lvl);
-            document.getElementById('armory-count').innerText = `Loaded: ${cards.length} items`;
-            const grid = document.getElementById('armory-grid');
-            grid.innerHTML = '';
-            cards.forEach(c => {
-                let div = document.createElement('div');
-                div.className = 'flashcard';
-                div.onclick = function() { this.classList.toggle('flipped'); };
-                div.innerHTML = `
-                    <div class="flashcard-inner">
-                        <div class="flashcard-front">${c.en}</div>
-                        <div class="flashcard-back">${c.cs}</div>
-                    </div>`;
-                grid.appendChild(div);
-            });
+const readings = {
+1:[
+{title:"Patrol at the checkpoint",text:"At 0800, a patrol leaves the base. Four soldiers travel in one vehicle. They arrive at the checkpoint at 0830. The road is clear, but the weather is cold. The team leader checks the map and sends a radio message. At 0900, the patrol returns to base. Everyone is safe.",qs:[
+["When does the patrol leave the base?",["0700","0800","0900"],1],
+["How many soldiers are in the vehicle?",["Two","Three","Four"],2],
+["What is the weather like?",["Cold","Hot","Stormy"],0],
+["How do they communicate?",["By email","By radio","By letter"],1],
+["What happens at 0900?",["They leave the base","They return to base","They cross a river"],1]]},
+{title:"A medical situation",text:"A soldier falls near the camp and injures his leg. His team leader calls the medical team by radio. The doctor arrives with a first-aid kit. The soldier is awake and can speak. The doctor checks the injury and asks for a vehicle. The team takes the soldier to the medical centre.",qs:[
+["What is injured?",["An arm","A leg","A hand"],1],
+["Who calls the medical team?",["The team leader","The driver","The doctor"],0],
+["Is the soldier awake?",["No","The text does not say","Yes"],2],
+["What does the doctor bring?",["A map","A first-aid kit","A radio tower"],1],
+["Where is the soldier taken?",["To the airport","To the medical centre","To the checkpoint"],1]]}
+],
+2:[
+{title:"Supply convoy",text:"A supply convoy departed headquarters at 0530 and was expected to reach the forward base before 0800. Heavy rain reduced visibility and slowed the vehicles. At 0715, the convoy commander reported a damaged bridge on the planned route. The commander requested permission to use an alternative road. Headquarters approved the change after checking local conditions. The convoy arrived at 0845, thirty minutes later than the revised schedule. All vehicles and personnel were accounted for.",qs:[
+["Why did the convoy slow down?",["A lack of fuel","Heavy rain","A radio failure"],1],
+["What problem was reported at 0715?",["A damaged bridge","Missing supplies","An injured driver"],0],
+["Who approved the alternative route?",["The convoy driver","The medical team","Headquarters"],2],
+["When did the convoy arrive?",["0745","0815","0845"],2],
+["Were all personnel accounted for?",["Yes","No","The text does not say"],0]]},
+{title:"Situation update",text:"The unit's morning report identified three developments. First, access to the northern road remains restricted because engineers are inspecting a damaged section. Second, medical supplies have arrived and are being distributed to the relevant teams. Third, local authorities have requested additional information about the planned transport schedule. The operations officer will review the request and provide an update by 1400. Until the review is complete, the existing schedule remains in force.",qs:[
+["Why is the northern road restricted?",["Engineers are inspecting damage","The road is under water","A convoy is missing"],0],
+["What has arrived?",["Fuel trucks","Medical supplies","New vehicles"],1],
+["Who requested more information?",["The engineers","The operations officer","Local authorities"],2],
+["When is the update expected?",["1200","1400","1600"],1],
+["What happens before the review is complete?",["The schedule remains in force","All transport stops","The route changes automatically"],0]]}
+],
+3:[
+{title:"Operational assessment",text:"The preliminary assessment indicates that the unit achieved its primary logistical objective, although several constraints affected the timetable. Severe weather reduced mobility, while incomplete information about the bridge's condition delayed route selection. The reporting team recommends that future plans include alternative transport options and clearer criteria for approving route changes. These recommendations should not be interpreted as evidence of individual negligence. The available data instead suggest a need to improve information-sharing between planning staff and field personnel. A full review will follow once the remaining records have been verified.",qs:[
+["What was achieved?",["Every objective without delay","The primary logistical objective","A permanent change of command"],1],
+["What delayed route selection?",["A lack of personnel","Incomplete information about the bridge","A damaged radio"],1],
+["What is recommended?",["Removing all route alternatives","Improving planning and information-sharing","Cancelling future reviews"],1],
+["Does the report establish individual negligence?",["Yes, explicitly","No, it cautions against that interpretation","It names a responsible person"],1],
+["When will the full review follow?",["After remaining records are verified","Before any records are checked","Immediately, according to the text"],0]]},
+{title:"Evaluating evidence",text:"An initial briefing suggested that the transport delay resulted from poor coordination. A subsequent review, however, found that the available timeline was incomplete and that two separate weather warnings had not been included in the original analysis. Although coordination problems cannot be excluded, the revised assessment does not support a definitive conclusion about their relative importance. Analysts recommend documenting the source and confidence level of each significant claim. They also advise decision-makers to distinguish established facts from plausible explanations, especially when the evidence remains provisional.",qs:[
+["What weakness was found in the initial analysis?",["It contained no dates at all","Its timeline was incomplete","It confirmed every possible cause"],1],
+["What additional information was identified?",["Two weather warnings","A new command structure","A missing aircraft"],0],
+["What is the revised conclusion?",["Coordination was certainly the sole cause","Coordination played no role","The relative causes cannot be determined definitively"],2],
+["What should analysts document?",["Only their final opinions","Sources and confidence levels","Personal preferences"],1],
+["What distinction should decision-makers make?",["Facts and plausible explanations","Old and new uniforms","Roads and buildings"],0]]}
+]
+};
 
-            // Setup Intel
-            document.getElementById('intel-text').innerText = intelData[lvl].text;
-            const iqBox = document.getElementById('intel-questions');
-            iqBox.innerHTML = '';
-            intelData[lvl].questions.forEach((q, idx) => {
-                let qDiv = document.createElement('div');
-                qDiv.className = 'intel-question';
-                let optsHTML = q.opts.map((opt, oIdx) => 
-                    `<button class="intel-opt-btn" onclick="checkIntel(this, ${idx}, ${oIdx})">${opt}</button>`
-                ).join('');
-                qDiv.innerHTML = `
-                    <p class="glitch-text" style="margin-bottom: 10px; font-size:1rem;">Q${idx+1}: ${q.q}</p>
-                    <div class="intel-options">${optsHTML}</div>
-                    <div class="intel-explanation" id="exp-${idx}">${q.exp}</div>
-                `;
-                iqBox.appendChild(qDiv);
-            });
+const grammar = {
+1:[
+["The soldiers ___ ready.","are",["is","are","am"],1,"The soldiers je množné číslo, proto are."],
+["___ the road clear?","Is",["Do","Are","Is"],2,"The road je jednotné číslo, proto is."],
+["He ___ the map every morning.","checks",["check","checks","checking"],1,"Ve 3. osobě jednotného čísla přidáme -s."],
+["___ move!","Don't",["Doesn't","Don't","Not"],1,"Záporný rozkaz tvoříme Don't + základní tvar."],
+["We ___ the base yesterday.","left",["leave","leaves","left"],2,"Leave má minulý tvar left."],
+["I ___ help.","need",["needs","needing","need"],2,"S I používáme need."],
+["Turn ___ at the bridge.","left",["left","to left","the lefts"],0,"Pokyn: Turn left."],
+["They ___ two vehicles.","have",["has","having","have"],2,"S they používáme have."]
+],
+2:[
+["The unit ___ moving now.","is",["are","is","be"],1,"Přítomný průběhový čas: is + moving."],
+["The convoy ___ at 0700 yesterday.","arrived",["arrive","arrived","arrives"],1,"Dokončená událost v minulosti: arrived."],
+["You ___ report the damage immediately.","must",["must","might to","are"],0,"Must + základní tvar slovesa."],
+["If the road is blocked, we ___ another route.","will use",["used","will use","would used"],1,"První kondicionál: if + přítomný čas, will + sloveso."],
+["The equipment ___ inspected yesterday.","was",["were","was","is be"],1,"Equipment se běžně považuje za nepočitatelné jednotné číslo."],
+["The report has ___ sent.","been",["be","being","been"],2,"Předpřítomný trpný rod: has been + příčestí."],
+["We arrived ___ the checkpoint at six.","at",["in","on","at"],2,"At the checkpoint; at six o'clock."],
+["Despite ___ rain, the convoy continued.","the",["a","the","an"],1,"The rain odkazuje na konkrétní déšť v situaci."]
+],
+3:[
+["If we ___ more time, we would review the data.","had",["have","had","will have"],1,"Druhý kondicionál: if + minulý čas, would + sloveso."],
+["The decision ___ before deployment.","had been approved",["had approved","had been approved","has approve"],1,"Předminulý trpný rod zdůrazňuje dřívější schválení."],
+["The delay may ___ caused by weather.","have been",["has been","have been","be have"],1,"May have been + příčestí vyjadřuje možnost v minulosti."],
+["___ the evidence is incomplete, the report identifies a trend.","Although",["Because of","Although","Despite of"],1,"Although následované vedlejší větou."],
+["The route was closed; ___, transport was delayed.","consequently",["consequently","unless","whereas"],0,"Consequently znamená v důsledku toho."],
+["It cannot be ruled ___ that conditions will change.","out",["off","up","out"],2,"Ustálené spojení: rule out."],
+["Unless approval ___ granted, work will not begin.","is",["will be","is","be"],1,"Po unless používáme v této podmínce přítomný čas."],
+["The findings are believed ___ accurate.","to be",["being","to be","be"],1,"Believe + object + to be je formální konstrukce."]
+]
+};
 
-            // Setup Combat (Pool of 120, select 10 for session)
-            combatPool = generateCombatQuestions(lvl);
-            // Randomly pick SESSION_LENGTH questions
-            sessionQuestions = combatPool.sort(() => 0.5 - Math.random()).slice(0, SESSION_LENGTH);
-            currentCombatIndex = 0;
-            
-            updateHUD();
-        }
+let level=1, mode="", index=0, score=0, answered=0, correctCount=0;
+let deck=[], revealed=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function saved(){try{return JSON.parse(localStorage.getItem("stanagOpsStats")||'{"done":0,"correct":0}')}catch(e){return {done:0,correct:0}}}
+function saveStats(){localStorage.setItem("stanagOpsStats",JSON.stringify({done:answered,correct:correctCount}))}
+function refreshStats(){
+ const s=saved();
+ $("statDone").textContent=s.done;
+ $("statAccuracy").textContent=(s.done?Math.round(s.correct/s.done*100):0)+"%";
+ $("statWords").textContent=vocab[level].length;
+}
+function selectLevel(n){
+ level=n;
+ document.querySelectorAll(".level-card").forEach(b=>b.classList.toggle("active",+b.dataset.level===level));
+}
+document.querySelectorAll(".level-card").forEach(b=>b.addEventListener("click",()=>selectLevel(+b.dataset.level)));
+$("continueBtn").addEventListener("click",()=>{
+ $("setup").classList.add("hidden");$("menu").classList.remove("hidden");
+ $("menuTitle").textContent="STANAG "+level;
+ refreshStats();
+});
+$("changeLevel").addEventListener("click",()=>{
+ $("menu").classList.add("hidden");$("setup").classList.remove("hidden");
+});
+$("resetProgress").addEventListener("click",()=>{
+ if(confirm("Opravdu resetovat statistiky v tomto prohlížeči?")){
+ answered=0;correctCount=0;saveStats();refreshStats();
+ }
+});
+document.querySelectorAll(".mode-card").forEach(b=>b.addEventListener("click",()=>startMode(b.dataset.mode)));
+$("backMenu").addEventListener("click",()=>{
+ $("workspace").classList.add("hidden");$("menu").classList.remove("hidden");refreshStats();
+});
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            document.getElementById('tab-' + tabId).classList.add('active');
-
-            if(tabId === 'combat' && currentCombatIndex === 0) loadCombatQuestion();
-        }
-
-        function updateHUD() {
-            // Rank progression
-            const ranks = [{x:0, r:"Pvt."}, {x:40, r:"Cpl."}, {x:80, r:"Sgt."}, {x:140, r:"Lt."}, {x:200, r:"Cpt."}];
-            let newRank = "Pvt.";
-            for(let i=0; i<ranks.length; i++) { if(pState.xp >= ranks[i].x) newRank = ranks[i].r; }
-            pState.rank = newRank;
-
-            document.getElementById('hud-xp').innerText = pState.xp;
-            document.getElementById('hud-rank').innerText = pState.rank;
-            
-            let hpFill = document.getElementById('hud-hp-bar');
-            hpFill.style.width = pState.hp + "%";
-            
-            if(pState.hp <= 25) hpFill.style.backgroundColor = "var(--danger)";
-            else if(pState.hp <= 50) hpFill.style.backgroundColor = "var(--bf-orange)";
-            else hpFill.style.backgroundColor = "var(--bf-cyan)";
-        }
-
-        function takeDamage() {
-            pState.hp = Math.max(0, pState.hp - 25);
-            updateHUD();
-            
-            let container = document.getElementById('app-container');
-            container.classList.remove('damage-shake');
-            void container.offsetWidth; // force reflow
-            container.classList.add('damage-shake');
-            setTimeout(() => container.classList.remove('damage-shake'), 300);
-
-            if(pState.hp <= 0) {
-                setTimeout(() => {
-                    alert("ARMOR DEPLETED. TERMINAL REBOOTING.");
-                    location.reload();
-                }, 400);
-            }
-        }
-
-        function checkIntel(btn, qIdx, oIdx) {
-            let q = intelData[currentLevel].questions[qIdx];
-            let expDiv = document.getElementById('exp-' + qIdx);
-            expDiv.style.display = 'block';
-            
-            let parent = btn.parentElement;
-            parent.querySelectorAll('button').forEach(b => b.disabled = true);
-
-            if(oIdx === q.ans) {
-                btn.style.borderColor = "var(--success)";
-                btn.style.color = "var(--success)";
-                pState.xp += 15;
-                updateHUD();
-            } else {
-                btn.style.borderColor = "var(--danger)";
-                btn.style.color = "var(--danger)";
-                takeDamage();
-            }
-        }
-
-        function loadCombatQuestion() {
-            let qBox = document.querySelector('.combat-q-box');
-            if(currentCombatIndex >= SESSION_LENGTH) {
-                document.getElementById('combat-progress').innerText = "COMPLETE";
-                qBox.innerHTML = `
-                    <h2 class="glitch-text" style="color:var(--success); text-align:center; font-size:1.5rem;">SIMULATION PASSED</h2>
-                    <p style="text-align:center; margin-top:2rem; color:#ccc;">Armor remaining: ${pState.hp}%<br>XP Earned: ${pState.xp}</p>
-                    <button class="btn" style="margin-top:2rem;" onclick="location.reload()">RETURN TO MAIN MENU</button>
-                `;
-                return;
-            }
-
-            document.getElementById('combat-progress').innerText = `${currentCombatIndex + 1} / ${SESSION_LENGTH}`;
-            let q = sessionQuestions[currentCombatIndex];
-            document.getElementById('combat-question').innerText = q.q;
-            
-            let optsBox = document.getElementById('combat-options');
-            optsBox.innerHTML = '';
-            q.opts.forEach((opt, idx) => {
-                let b = document.createElement('button');
-                b.className = 'combat-opt-btn';
-                b.innerText = opt;
-                b.onclick = () => handleCombatAnswer(idx);
-                optsBox.appendChild(b);
-            });
-        }
-
-        function handleCombatAnswer(idx) {
-            let q = sessionQuestions[currentCombatIndex];
-            let isCorrect = (idx === q.ans);
-            
-            let mBox = document.getElementById('modal-box');
-            let mTitle = document.getElementById('modal-title');
-            let mIcon = document.getElementById('modal-icon');
-            let mBody = document.getElementById('modal-body');
-
-            if(isCorrect) {
-                mBox.classList.remove('wrong');
-                mTitle.innerText = "SUCCESS";
-                mTitle.style.color = "var(--success)";
-                mIcon.innerHTML = "✓";
-                mIcon.style.color = "var(--success)";
-                pState.xp += 20;
-            } else {
-                mBox.classList.add('wrong');
-                mTitle.innerText = "ERROR";
-                mTitle.style.color = "var(--danger)";
-                mIcon.innerHTML = "⚠";
-                mIcon.style.color = "var(--danger)";
-                takeDamage();
-            }
-            
-            // Czech rationale
-            mBody.innerHTML = `<strong style="color:#fff;">Odůvodnění:</strong><br><br>${q.exp}`;
-            updateHUD();
-            document.getElementById('tactical-modal').style.display = 'flex';
-        }
-
-        function nextCombatRound() {
-            document.getElementById('tactical-modal').style.display = 'none';
-            currentCombatIndex++;
-            loadCombatQuestion();
-        }
-    </script>
+function startMode(m){
+ mode=m;index=0;score=0;revealed=false;
+ $("menu").classList.add("hidden");$("workspace").classList.remove("hidden");
+ const names={theory:"TEORIE",vocab:"SLOVNÍ ZÁSOBA",reading:"ČTENÍ S POROZUMĚNÍM",grammar:"GRAMATIKA"};
+ $("modulePill").textContent=names[m];$("levelPill").textContent="STANAG "+level;
+ if(m==="theory"){deck=theory[level];renderTheory()}
+ if(m==="vocab"){deck=vocab[level];renderVocab()}
+ if(m==="reading"){deck=readings[level];renderReading()}
+ if(m==="grammar"){deck=grammar[level];renderGrammar()}
+ updateProgress();
+}
+function updateProgress(){
+ const total=deck.length||1;
+ $("progressBar").style.width=Math.min(100,index/total*100)+"%";
+}
+function nextButton(label="Další →"){
+ return `<div class="actions"><button class="primary" id="nextBtn">${label}</button></div>`;
+}
+function renderTheory(){
+ if(index>=deck.length){finishMode();return}
+ const item=deck[index];
+ $("workContent").innerHTML=`<div class="panel"><div class="eyebrow">LESSON ${index+1} / ${deck.length}</div><h2>${esc(item[0])}</h2><p>${esc(item[1])}</p>${nextButton(index===deck.length-1?"Dokončit lekce":"Další lekce →")}</div>`;
+ $("nextBtn").onclick=()=>{index++;updateProgress();renderTheory()};
+}
+function renderVocab(){
+ if(index>=deck.length){finishMode();return}
+ const w=deck[index];
+ $("workContent").innerHTML=`<div class="panel word-card" id="flashcard" role="button" tabindex="0" aria-label="Odhalit překlad">
+ <div class="eyebrow">FLASHCARD ${index+1} / ${deck.length}</div>
+ <div class="word">${esc(w[0])}</div>
+ <div class="small">Klikni na kartičku nebo na tlačítko a odhal překlad.</div>
+ <div id="translation" class="hidden"><div class="translation">${esc(w[1])}</div><p class="example">${esc(w[2])}</p></div>
+ </div>
+ <div class="actions"><button class="secondary" id="revealBtn">${revealed?"Skrýt překlad":"Odhalit překlad"}</button><button class="secondary" id="prevWord" ${index===0?"disabled":""}>← Předchozí</button><button class="primary" id="nextWord">${index===deck.length-1?"Dokončit":"Další slovíčko →"}</button></div>
+ <div class="panel"><h3>Rychlý test</h3><p>Jaký je český překlad slova <b>${esc(w[0])}</b>?</p><div class="options" id="wordOptions"></div><div id="wordFeedback" aria-live="polite"></div></div>`;
+ const reveal=()=>{revealed=!revealed;$("translation").classList.toggle("hidden",!revealed);$("revealBtn").textContent=revealed?"Skrýt překlad":"Odhalit překlad"};
+ $("flashcard").onclick=reveal;$("flashcard").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal()}};
+ $("revealBtn").onclick=reveal;
+ $("prevWord").onclick=()=>{if(index>0)index--;revealed=false;renderVocab();updateProgress()};
+ $("nextWord").onclick=()=>{index++;revealed=false;updateProgress();renderVocab()};
+ const choices=[w[1]];
+ while(choices.length<3){
+   const t=deck[Math.floor(Math.random()*deck.length)][1];
+   if(!choices.includes(t))choices.push(t);
+ }
+ choices.sort(()=>Math.random()-.5);
+ choices.forEach(c=>{
+   const b=document.createElement("button");b.className="option";b.textContent=c;
+   b.onclick=()=>{
+     if(document.querySelector("#wordOptions button:disabled"))return;
+     document.querySelectorAll("#wordOptions button").forEach(x=>{x.disabled=true;if(x.textContent===w[1])x.classList.add("correct")});
+     const ok=c===w[1];if(!ok)b.classList.add("wrong");
+     recordAnswer(ok);
+     $("wordFeedback").innerHTML=`<div class="feedback ${ok?"good":"bad"}">${ok?"Správně!":"Správný překlad: "+esc(w[1])}</div>`;
+   };
+   $("wordOptions").appendChild(b);
+ });
+}
+function renderReading(){
+ if(index>=deck.length){finishMode();return}
+ const r=deck[index];
+ $("workContent").innerHTML=`<div class="panel"><div class="eyebrow">FIELD REPORT ${index+1} / ${deck.length}</div><h2>${esc(r.title)}</h2><div class="reading">${esc(r.text)}</div></div><div id="readingQuestions"></div>`;
+ r.qs.forEach((q,i)=>addQuestion($("readingQuestions"),q,i));
+ $("workContent").insertAdjacentHTML("beforeend",nextButton(index===deck.length-1?"Dokončit čtení":"Další text →"));
+ $("nextBtn").onclick=()=>{index++;updateProgress();renderReading()};
+}
+function addQuestion(container,q,i){
+ const box=document.createElement("div");box.className="panel";
+ box.innerHTML=`<b>${i+1}. ${esc(q[0])}</b><div class="options"></div><div class="feedbackArea" aria-live="polite"></div>`;
+ const opts=box.querySelector(".options");
+ q[1].forEach((opt,j)=>{
+  const b=document.createElement("button");b.className="option";b.textContent=opt;
+  b.onclick=()=>{
+   if(opts.querySelector("button:disabled"))return;
+   opts.querySelectorAll("button").forEach((x,k)=>{x.disabled=true;if(k===q[2])x.classList.add("correct")});
+   const ok=j===q[2];if(!ok)b.classList.add("wrong");
+   recordAnswer(ok);
+   box.querySelector(".feedbackArea").innerHTML=`<div class="feedback ${ok?"good":"bad"}">${ok?"Správně!":"Nesprávně."}</div>`;
+  };
+  opts.appendChild(b);
+ });
+ container.appendChild(box);
+}
+function renderGrammar(){
+ if(index>=deck.length){finishMode();return}
+ const q=deck[index];
+ const display=q[0].replace("___",'<span style="color:var(--green)">_____</span>');
+ $("workContent").innerHTML=`<div class="panel"><div class="eyebrow">GRAMMAR DRILL ${index+1} / ${deck.length}</div><h2>Vyber správnou odpověď</h2><div class="question">${display}</div><div id="grammarOptions" class="options"></div><div id="grammarFeedback" aria-live="polite"></div></div>`;
+ q[2].forEach((opt,j)=>{
+  const b=document.createElement("button");b.className="option";b.textContent=opt;
+  b.onclick=()=>{
+   if(document.querySelector("#grammarOptions button:disabled"))return;
+   document.querySelectorAll("#grammarOptions button").forEach((x,k)=>{x.disabled=true;if(k===q[3])x.classList.add("correct")});
+   const ok=j===q[3];if(!ok)b.classList.add("wrong");
+   recordAnswer(ok);
+   $("grammarFeedback").innerHTML=`<div class="feedback ${ok?"good":"bad"}"><b>${ok?"Správně!":"Správná odpověď: "+esc(q[1])}</b><br>${esc(q[4])}</div>`;
+   $("workContent").insertAdjacentHTML("beforeend",nextButton(index===deck.length-1?"Dokončit test":"Další otázka →"));
+   $("nextBtn").onclick=()=>{index++;updateProgress();renderGrammar()};
+  };
+  $("grammarOptions").appendChild(b);
+ });
+}
+function recordAnswer(ok){
+ answered++;if(ok){correctCount++;score++}saveStats();refreshStats();
+}
+function finishMode(){
+ $("progressBar").style.width="100%";
+ const total=deck.length;
+ $("workContent").innerHTML=`<div class="panel"><div class="eyebrow">TRAINING COMPLETE</div><h2>Výcvik dokončen.</h2><p>Dokončil jsi modul: ${esc($("modulePill").textContent)}.</p><div class="stats"><div class="stat"><strong>${score}</strong><span>Správné odpovědi v testu</span></div><div class="stat"><strong>${total}</strong><span>Počet položek / lekcí</span></div><div class="stat"><strong>${total?Math.round(score/total*100):0}%</strong><span>Úspěšnost tohoto modulu</span></div></div><p>Pokračuj dalším modulem nebo si zopakuj obtížnější otázky.</p><div class="actions"><button id="againBtn" class="primary">Opakovat modul</button><button id="finishBtn" class="secondary">Zpět do menu</button></div></div>`;
+ $("againBtn").onclick=()=>startMode(mode);
+ $("finishBtn").onclick=()=>{$("workspace").classList.add("hidden");$("menu").classList.remove("hidden");refreshStats()};
+}
+refreshStats();
+</script>
 </body>
 </html>
