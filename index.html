@@ -1,22 +1,23 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BATTLEFIELD // STANAG 6001 TACTICAL TRAINER</title>
+    <title>BATTLEFIELD 6 // STANAG 6001 TACTICAL TRAINER</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #070b0e;
-            --bg-panel: rgba(14, 24, 30, 0.85);
+            --bg-dark: #060a0d;
+            --bg-panel: rgba(12, 22, 28, 0.9);
             --bf-cyan: #00f0ff;
-            --bf-cyan-dim: rgba(0, 240, 255, 0.15);
+            --bf-cyan-dim: rgba(0, 240, 255, 0.14);
             --bf-orange: #ff5500;
             --bf-orange-dim: rgba(255, 85, 0, 0.2);
             --bf-green: #00ff88;
             --bf-red: #ff2a55;
-            --text-main: #e2f1f5;
-            --text-muted: #7a9ca8;
+            --text-main: #e4f3f7;
+            --text-muted: #7b9ea9;
         }
 
         * {
@@ -28,17 +29,16 @@
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 50% 10%, rgba(0, 240, 255, 0.08), transparent 60%),
+                radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12), transparent 65%),
                 linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
+            background-size: 100% 100%, 36px 36px, 36px 36px;
             color: var(--text-main);
             font-family: 'Rajdhani', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Scanline overlay */
         body::after {
             content: "";
             position: fixed;
@@ -54,79 +54,40 @@
             z-index: 999;
         }
 
-        /* Top HUD Header */
-        header {
-            border-bottom: 2px solid var(--bf-cyan);
-            background: rgba(7, 11, 14, 0.92);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand-tag {
-            background: var(--bf-orange);
-            color: #000;
-            font-family: 'Share Tech Mono', monospace;
-            font-weight: bold;
-            padding: 4px 10px;
-            font-size: 1.1rem;
-            clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
-        }
-
-        .brand h1 {
-            font-size: 1.8rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--text-main);
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-        }
-
-        .hud-stats {
-            display: flex;
-            gap: 20px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.95rem;
-        }
-
-        .stat-box {
-            border: 1px solid var(--bf-cyan);
-            background: var(--bf-cyan-dim);
-            padding: 6px 14px;
-            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-        }
-
-        .stat-box span {
-            color: var(--bf-cyan);
-            font-weight: bold;
-        }
-
         .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px 60px;
+            max-width: 1240px;
+            margin: 40px auto;
+            padding: 0 20px 70px;
+        }
+
+        #screen-level-select {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #screen-training {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Tactical Headings */
         .section-title {
-            font-size: 1.6rem;
+            font-size: 1.55rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             border-left: 4px solid var(--bf-orange);
             padding-left: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .section-subtitle {
@@ -135,60 +96,124 @@
             font-size: 0.9rem;
         }
 
-        /* STANAG Level Cards */
+        .hero-banner {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(255, 85, 0, 0.08));
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            padding: 35px;
+            margin-bottom: 30px;
+            text-align: center;
+            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
+        }
+
+        .hero-banner h2 {
+            font-size: 2.4rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .hero-banner p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
         .level-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 35px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
         }
 
         .level-card {
             background: var(--bg-panel);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            padding: 25px;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            padding: 30px;
             cursor: pointer;
             transition: all 0.25s ease;
             position: relative;
-            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
         }
 
-        .level-card:hover, .level-card.active {
+        .level-card:hover {
             border-color: var(--bf-cyan);
             background: rgba(0, 240, 255, 0.12);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 240, 255, 0.2);
-        }
-
-        .level-card.active {
-            border-left: 5px solid var(--bf-orange);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 240, 255, 0.22);
         }
 
         .level-badge {
             font-family: 'Share Tech Mono', monospace;
             color: var(--bf-orange);
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
+            font-size: 0.95rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
         }
 
-        .level-card h2 {
-            font-size: 2rem;
-            margin-bottom: 10px;
+        .level-card h3 {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
             color: #fff;
         }
 
         .level-card p {
             color: var(--text-muted);
-            font-size: 1.05rem;
-            line-height: 1.4;
+            font-size: 1.08rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
         }
 
-        /* Module Navigation Tabs */
+        .level-meta {
+            border-top: 1px dashed rgba(0, 240, 255, 0.25);
+            padding-top: 14px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.88rem;
+            color: var(--bf-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .enter-btn {
+            background: var(--bf-cyan);
+            color: #000;
+            padding: 6px 14px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .top-return-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 85, 0, 0.1);
+            border: 1px solid var(--bf-orange);
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .current-mission-tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.05rem;
+            color: #fff;
+        }
+
+        .current-mission-tag strong {
+            color: var(--bf-orange);
+        }
+
         .module-nav {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
             margin-bottom: 25px;
         }
 
@@ -196,7 +221,7 @@
             background: var(--bg-panel);
             border: 1px solid rgba(0, 240, 255, 0.35);
             color: var(--text-main);
-            padding: 15px 18px;
+            padding: 16px 18px;
             font-family: 'Rajdhani', sans-serif;
             font-size: 1.15rem;
             font-weight: 700;
@@ -220,20 +245,149 @@
             background: var(--bf-orange);
             border-color: var(--bf-orange);
             color: #000;
-            box-shadow: 0 0 15px rgba(255, 85, 0, 0.4);
+            box-shadow: 0 0 18px rgba(255, 85, 0, 0.4);
         }
 
-        /* Workspace Panel */
         .workspace {
             background: var(--bg-panel);
             border: 1px solid rgba(0, 240, 255, 0.4);
             padding: 30px;
-            min-height: 360px;
+            min-height: 440px;
             position: relative;
             clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 0 100%);
         }
 
-        /* Theory Layout */
+        /* Flashcards Grid */
+        .vocab-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 22px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+        }
+
+        .vocab-controls-left, .vocab-controls-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--bf-cyan);
+            color: #fff;
+            padding: 9px 14px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            min-width: 220px;
+        }
+
+        .select-count {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--bf-cyan);
+            color: var(--bf-cyan);
+            padding: 8px 12px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .flashcards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .flashcard-item {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            padding: 18px;
+            min-height: 165px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+        }
+
+        .flashcard-item:hover {
+            border-color: var(--bf-cyan);
+            background: rgba(0, 240, 255, 0.12);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 240, 255, 0.15);
+        }
+
+        .flashcard-item.flipped {
+            background: rgba(255, 85, 0, 0.12);
+            border-color: var(--bf-orange);
+        }
+
+        .fc-num {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .fc-term {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--bf-cyan);
+            margin: 8px 0;
+        }
+
+        .flashcard-item.flipped .fc-term {
+            color: #fff;
+            font-size: 1.15rem;
+        }
+
+        .fc-cz {
+            display: none;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--bf-orange);
+            margin: 6px 0;
+        }
+
+        .flashcard-item.flipped .fc-cz {
+            display: block;
+        }
+
+        .fc-example {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            font-style: italic;
+            line-height: 1.35;
+        }
+
+        .fc-hint {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--bf-cyan);
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 240, 255, 0.25);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Theory, Reading, and Quizzes */
         .theory-block {
             margin-bottom: 22px;
             padding-bottom: 18px;
@@ -262,9 +416,8 @@
             margin-top: 8px;
         }
 
-        /* Interactive Quiz & Reading Styles */
         .reading-passage {
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0, 0, 0, 0.5);
             border-left: 3px solid var(--bf-cyan);
             padding: 20px;
             margin-bottom: 25px;
@@ -281,12 +434,12 @@
         .question-meta {
             font-family: 'Share Tech Mono', monospace;
             color: var(--bf-orange);
-            font-size: 0.9rem;
-            margin-bottom: 5px;
+            font-size: 0.92rem;
+            margin-bottom: 6px;
         }
 
         .question-text {
-            font-size: 1.35rem;
+            font-size: 1.4rem;
             font-weight: 600;
             margin-bottom: 18px;
         }
@@ -336,154 +489,146 @@
             font-size: 1.1rem;
         }
 
-        .action-bar {
-            margin-top: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .btn-tactical {
             background: var(--bf-cyan);
             color: #000;
             border: none;
-            padding: 12px 26px;
+            padding: 10px 22px;
             font-family: 'Rajdhani', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
-            clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+            clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
             transition: 0.2s;
         }
 
-        .btn-tactical:hover {
+        .btn-tactical:hover:not(:disabled) {
             background: #fff;
             box-shadow: 0 0 15px var(--bf-cyan);
         }
 
-        .vocab-mode-switch {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+        .btn-tactical:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
-        .flashcard {
-            background: rgba(0, 240, 255, 0.06);
-            border: 1px solid var(--bf-cyan);
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: 0.2s;
+        .btn-tactical.orange {
+            background: var(--bf-orange);
+            color: #000;
         }
 
-        .flashcard:hover {
-            background: rgba(0, 240, 255, 0.12);
+        .btn-tactical.orange:hover {
+            background: #fff;
+            box-shadow: 0 0 15px var(--bf-orange);
         }
 
-        .flashcard-term {
-            font-size: 2rem;
-            color: var(--bf-cyan);
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .flashcard-translation {
-            font-size: 1.4rem;
-            color: var(--bf-orange);
-            display: none;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 650px) {
-            header {
-                padding: 15px;
-            }
-            .brand h1 {
-                font-size: 1.3rem;
-            }
-            .workspace {
-                padding: 18px;
-            }
+        @media (max-width: 680px) {
+            .workspace { padding: 18px; }
+            .hero-banner h2 { font-size: 1.7rem; }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="brand">
-        <div class="brand-tag">BF6 // NATO</div>
-        <h1>STANAG 6001 TACTICAL TRAINER</h1>
-    </div>
-    <div class="hud-stats">
-        <div class="stat-box">OPERATIVE LEVEL: <span id="hud-level">SLP 1</span></div>
-        <div class="stat-box">XP SCORE: <span id="hud-score">0</span></div>
-        <div class="stat-box">STREAK: <span id="hud-streak">0</span></div>
-    </div>
-</header>
-
 <div class="container">
-    <!-- 1. VÝBĚR ÚROVNĚ STANAG -->
-    <div class="section-title">
-        <span>01 // ZVOLTE ÚROVEŇ OPERACE (STANAG LEVEL)</span>
-        <span class="section-subtitle">NATO STANDARDIZATION AGREEMENT 6001</span>
-    </div>
 
-    <div class="level-grid">
-        <div class="level-card active" onclick="selectLevel(1)" id="card-lvl-1">
-            <div class="level-badge">CLEARANCE // LEVEL 01</div>
-            <h2>STANAG 1 (SLP 1)</h2>
-            <p><strong>Survival / Základní způsobilost:</strong> Každodenní vojenská rutina, základní vybavení, cestování, orientace na základně a jednoduché rozkazy.</p>
+    <!-- ========================================== -->
+    <!-- OBRAZOVKA 1: VÝBĚR ÚROVNĚ STANAG 1, 2, 3   -->
+    <!-- ========================================== -->
+    <div id="screen-level-select">
+        <div class="hero-banner">
+            <h2>ZVOLTE OPERAČNÍ ÚROVEŇ STANAG 6001</h2>
+            <p>Vyberte požadovanou úroveň jazykové způsobilosti NATO (SLP 1, SLP 2 nebo SLP 3) pro zahájení výcviku v modulech Teorie, Slovní zásoba (52 pojmů v každé kapitole), Čtení s porozuměním a Gramatika.</p>
         </div>
-        <div class="level-card" onclick="selectLevel(2)" id="card-lvl-2">
-            <div class="level-badge">CLEARANCE // LEVEL 02</div>
-            <h2>STANAG 2 (SLP 2)</h2>
-            <p><strong>Functional / Funkční způsobilost:</strong> Hlášení incidentů (SITREP), briefingy, logistika, zahraniční mise, vyjednávání a pracovní komunikace.</p>
+
+        <div class="section-title">
+            <span>01 // VÝBĚR ÚROVNĚ (SELECT STANAG LEVEL)</span>
+            <span class="section-subtitle">156 VOJENSKÝCH POJMŮ V DATABÁZI</span>
         </div>
-        <div class="level-card" onclick="selectLevel(3)" id="card-lvl-3">
-            <div class="level-badge">CLEARANCE // LEVEL 03</div>
-            <h2>STANAG 3 (SLP 3)</h2>
-            <p><strong>Professional / Profesionální způsobilost:</strong> Geopolitika, hybridní hrozby, strategické plánování, ROE, abstraktní argumentace a pokročilá stylistika.</p>
+
+        <div class="level-grid">
+            <div class="level-card" onclick="openStanagLevel(1)">
+                <div>
+                    <div class="level-badge">CLEARANCE // LEVEL 01</div>
+                    <h3>STANAG 1 (SLP 1)</h3>
+                    <p><strong>Survival / Základní způsobilost:</strong> Základní vojenská rutina, hodnosti, výstroj, zbraně, orientace na základně, lékařské ošetření a jednoduché rozkazy.</p>
+                </div>
+                <div class="level-meta">
+                    <span>52 SLOVÍČEK + KVÍZY</span>
+                    <span class="enter-btn">SPUSTIT VÝCVIK ►</span>
+                </div>
+            </div>
+
+            <div class="level-card" onclick="openStanagLevel(2)">
+                <div>
+                    <div class="level-badge">CLEARANCE // LEVEL 02</div>
+                    <h3>STANAG 2 (SLP 2)</h3>
+                    <p><strong>Functional / Funkční způsobilost:</strong> Zahraniční mise, hlášení incidentů (SITREP, MEDEVAC), konvoje, logistika, patroly, ROE a pracovní komunikace.</p>
+                </div>
+                <div class="level-meta">
+                    <span>52 SLOVÍČEK + KVÍZY</span>
+                    <span class="enter-btn">SPUSTIT VÝCVIK ►</span>
+                </div>
+            </div>
+
+            <div class="level-card" onclick="openStanagLevel(3)">
+                <div>
+                    <div class="level-badge">CLEARANCE // LEVEL 03</div>
+                    <h3>STANAG 3 (SLP 3)</h3>
+                    <p><strong>Professional / Profesionální způsobilost:</strong> Vojenská strategie, geopolitika, hybridní hrozby, odstrašení, mezinárodní právo, obranné akvizice a abstraktní argumentace.</p>
+                </div>
+                <div class="level-meta">
+                    <span>52 SLOVÍČEK + KVÍZY</span>
+                    <span class="enter-btn">SPUSTIT VÝCVIK ►</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 2. VÝBĚR TRÉNINKOVÉHO MODULU -->
-    <div class="section-title">
-        <span>02 // ZVOLTE BOJOVÝ MODUL (TRAINING MODULE)</span>
-        <span class="section-subtitle" id="active-module-label">MODULE: TEORIE</span>
+    <!-- ========================================== -->
+    <!-- OBRAZOVKA 2: TRÉNINKOVÉ MODULY             -->
+    <!-- ========================================== -->
+    <div id="screen-training">
+        <div class="top-return-bar">
+            <button class="btn-tactical orange" onclick="goBackToSelection()">◄ ZPĚT NA VÝBĚR STANAG (1 / 2 / 3)</button>
+            <div class="current-mission-tag">AKTIVNÍ OPERACE: <strong id="active-level-banner">STANAG 1 (SLP 1)</strong></div>
+        </div>
+
+        <div class="section-title">
+            <span>BOJOVÝ MODUL (TRAINING MODULE)</span>
+            <span class="section-subtitle" id="active-module-label">MODULE: SLOVNÍ ZÁSOBA</span>
+        </div>
+
+        <div class="module-nav">
+            <button class="module-btn" onclick="selectModule('theory')" id="btn-theory">
+                <span>[01] TEORIE & BRIEFING</span>
+                <span>►</span>
+            </button>
+            <button class="module-btn active" onclick="selectModule('vocab')" id="btn-vocab">
+                <span>[02] SLOVNÍ ZÁSOBA (52)</span>
+                <span>►</span>
+            </button>
+            <button class="module-btn" onclick="selectModule('reading')" id="btn-reading">
+                <span>[03] ČTENÍ & POROZUMĚNÍ</span>
+                <span>►</span>
+            </button>
+            <button class="module-btn" onclick="selectModule('grammar')" id="btn-grammar">
+                <span>[04] TRÉNINK GRAMATIKY</span>
+                <span>►</span>
+            </button>
+        </div>
+
+        <div class="workspace" id="workspace"></div>
     </div>
 
-    <div class="module-nav">
-        <button class="module-btn active" onclick="selectModule('theory')" id="btn-theory">
-            <span>[01] TEORIE & BRIEFING</span>
-            <span>►</span>
-        </button>
-        <button class="module-btn" onclick="selectModule('vocab')" id="btn-vocab">
-            <span>[02] SLOVNÍ ZÁSOBA</span>
-            <span>►</span>
-        </button>
-        <button class="module-btn" onclick="selectModule('reading')" id="btn-reading">
-            <span>[03] ČTENÍ & POROZUMĚNÍ</span>
-            <span>►</span>
-        </button>
-        <button class="module-btn" onclick="selectModule('grammar')" id="btn-grammar">
-            <span>[04] TRÉNINK GRAMATIKY</span>
-            <span>►</span>
-        </button>
-    </div>
-
-    <!-- 3. PRACOVNÍ PLOCHA -->
-    <div class="workspace" id="workspace">
-        <!-- Dynamicky vykreslovaný obsah -->
-    </div>
 </div>
 
 <script>
-    // ==========================================
-    // DATABÁZE PRO STANAG 1, 2, 3
-    // ==========================================
+    // =========================================================================
+    // KOMPLETNÍ DATABÁZE: 52 SLOVÍČEK PRO KAŽDOU ÚROVEŇ (CELKEM 156 SLOVÍČEK)
+    // =========================================================================
     const stanagData = {
         1: {
             name: "STANAG 1 (SLP 1)",
@@ -495,59 +640,71 @@
                 {
                     title: "Klíčová gramatika pro SLP 1",
                     list: [
-                        "Přítomný čas prostý a průběhový (Present Simple vs. Continuous) – rutina vs. to, co se děje teď.",
-                        "Minulý čas prostý (Past Simple) – pravidelná a nepravidelná slovesa (went, saw, reported).",
-                        "Vyjádření budoucnosti (will / going to) – plány a jednoduché předpovědi.",
+                        "Přítomný čas prostý a průběhový (Present Simple vs. Continuous) – denní rutina vs. právě probíhající děj.",
+                        "Minulý čas prostý (Past Simple) – pravidelná a nepravidelná slovesa (went, saw, reported, inspected).",
+                        "Vyjádření budoucnosti (will / going to) – plány a jednoduché rozkazy.",
                         "Modální slovesa (must, have to, can, should) – rozkazy, povinnosti a povolení.",
                         "Předložky místa a času (at 0600 hours, on Monday, in the barracks)."
                     ]
                 },
                 {
                     title: "Taktické tipy ke zkoušce",
-                    content: "U ústní a písemné části se nesnažte o zbytečně složitá souvětí. Používejte krátké, jasné věty (SVOMPT – Podmět, Přísudek, Předmět, Způsob, Místo, Čas). U čtení hledejte klíčová slova: časy, čísla, hodnosti a místa."
+                    content: "U ústní a písemné části se nesnažte o zbytečně složitá souvětí. Používejte krátké, jasné věty (Podmět - Přísudek - Předmět - Místo - Čas). U čtení hledejte klíčové údaje: časy, čísla, hodnosti, budovy a výstroj."
                 }
             ],
             vocab: [
-                {
-                    term: "Barracks",
-                    cz: "Kasárna / ubytovna",
-                    example: "All soldiers must return to the barracks before 22:00.",
-                    q: "Where do soldiers sleep on the military base?",
-                    options: ["In the barracks", "In the magazine", "On the rifle range", "In the holster"],
-                    answer: 0
-                },
-                {
-                    term: "On duty / Off duty",
-                    cz: "Ve službě / Mimo službu",
-                    example: "Sergeant Miller is on duty at the main gate today.",
-                    q: "Lieutenant Evans is not working today. He is ___.",
-                    options: ["under fire", "off duty", "on guard", "in rank"],
-                    answer: 1
-                },
-                {
-                    term: "Ammunition (Ammo)",
-                    cz: "Munice / střelivo",
-                    example: "Check your weapon and count your ammunition.",
-                    q: "Soldiers need ___ for their rifles during live-fire training.",
-                    options: ["ammunition", "permissions", "appointments", "luggage"],
-                    answer: 0
-                },
-                {
-                    term: "Commanding Officer (CO)",
-                    cz: "Velící důstojník / velitel",
-                    example: "You must report the problem to your Commanding Officer.",
-                    q: "Who is in charge of the unit?",
-                    options: ["The Commanding Officer", "The Private", "The Pedestrian", "The Mechanic"],
-                    answer: 0
-                },
-                {
-                    term: "Assembly area",
-                    cz: "Shromaždiště / nástupní prostor",
-                    example: "Meet the squad at the assembly area in ten minutes.",
-                    q: "In case of an alarm, all personnel must go to the ___.",
-                    options: ["assembly area", "mess hall menu", "laundry bag", "traffic jam"],
-                    answer: 0
-                }
+                { term: "Barracks", cz: "Kasárna / ubytovna", ex: "All soldiers must return to the barracks by 22:00." },
+                { term: "Mess hall / DFAC", cz: "Vojenská jídelna", ex: "Breakfast is served in the mess hall at 06:30." },
+                { term: "Rifle range", cz: "Střelnice", ex: "Our platoon is training at the rifle range today." },
+                { term: "Guardhouse", cz: "Strážnice", ex: "Report the visitor to the sergeant at the guardhouse." },
+                { term: "Parade ground", cz: "Nástupiště / cvičiště", ex: "The battalion assembled on the parade ground." },
+                { term: "Armory", cz: "Zbrojnice", ex: "Hand in your weapon at the armory after duty." },
+                { term: "Infirmary", cz: "Ošetřovna", ex: "He went to the infirmary because of a high fever." },
+                { term: "Checkpoint", cz: "Kontrolní stanoviště", ex: "Show your ID card at the first checkpoint." },
+                { term: "Main gate", cz: "Hlavní brána", ex: "The military police guard the main gate 24 hours a day." },
+                { term: "Headquarters (HQ)", cz: "Velitelství / štáb", ex: "The briefing will take place at Headquarters." },
+                { term: "Private", cz: "Vojín", ex: "Private Davis joined the army three months ago." },
+                { term: "Corporal", cz: "Desátník", ex: "Corporal Smith is the leader of our fireteam." },
+                { term: "Sergeant", cz: "Četař / rotný / seržant", ex: "The drill sergeant inspected our boots." },
+                { term: "Lieutenant", cz: "Poručík", ex: "Second Lieutenant Brown commands the first platoon." },
+                { term: "Captain", cz: "Kapitán", ex: "Captain Taylor is our company commander." },
+                { term: "Major", cz: "Major", ex: "Major Wilson works as a staff officer." },
+                { term: "Colonel", cz: "Plukovník", ex: "The base commander is Colonel Harris." },
+                { term: "General", cz: "Generál", ex: "The General visited our training center yesterday." },
+                { term: "Commanding Officer (CO)", cz: "Velící důstojník / velitel", ex: "You need permission from your Commanding Officer." },
+                { term: "Non-commissioned officer (NCO)", cz: "Poddůstojník", ex: "Experienced NCOs train the new recruits." },
+                { term: "Combat uniform", cz: "Polní / bojová uniforma", ex: "Wear your combat uniform for the field exercise." },
+                { term: "Dress uniform", cz: "Slavnostní / vycházková uniforma", ex: "Soldiers wore dress uniforms during the ceremony." },
+                { term: "Combat boots", cz: "Vojenské boty (kanady)", ex: "Clean and polish your combat boots every evening." },
+                { term: "Helmet", cz: "Přilba / helma", ex: "Always wear your helmet in the tactical zone." },
+                { term: "Body armor", cz: "Neprůstřelná vesta", ex: "Put on your body armor before entering the range." },
+                { term: "Rucksack / Backpack", cz: "Vojenský batoh / torna", ex: "His rucksack weighs more than twenty kilograms." },
+                { term: "First aid kit", cz: "Lékárnička", ex: "Every soldier carries an individual first aid kit." },
+                { term: "Canteen", cz: "Polní láhev", ex: "Fill your canteen with clean drinking water." },
+                { term: "Dog tags", cz: "Identifikační známky", ex: "Never take off your dog tags during deployment." },
+                { term: "Insignia", cz: "Hodnostní označení / nášivky", ex: "He wears the sergeant insignia on his chest." },
+                { term: "Assault rifle", cz: "Útočná puška", ex: "Learn how to clean and assemble your assault rifle." },
+                { term: "Handgun / Pistol", cz: "Pistole / krátká zbraň", ex: "Officers carry a 9mm handgun in a holster." },
+                { term: "Magazine", cz: "Zásobník", ex: "Load thirty rounds into each magazine." },
+                { term: "Ammunition (Ammo)", cz: "Munice / střelivo", ex: "Keep the ammunition dry and locked." },
+                { term: "Trigger", cz: "Spoušť", ex: "Keep your finger off the trigger until ready to fire." },
+                { term: "Barrel", cz: "Hlaveň", ex: "Never point the rifle barrel at anyone." },
+                { term: "Safety catch", cz: "Pojistka zbraně", ex: "Make sure the safety catch is on." },
+                { term: "Holster", cz: "Pouzdro na pistoli", ex: "Secure your pistol in the holster." },
+                { term: "Live fire", cz: "Ostrá střelba", ex: "Tomorrow we have a live-fire exercise." },
+                { term: "Blank rounds", cz: "Slepé / cvičné náboje", ex: "We used blank rounds during the forest training." },
+                { term: "Reveille", cz: "Budíček", ex: "Reveille is at 05:30 every weekday." },
+                { term: "Roll call", cz: "Nástup s kontrolou počtu", ex: "Two soldiers were late for morning roll call." },
+                { term: "Physical training (PT)", cz: "Tělesná příprava (tělocvik)", ex: "Morning PT includes running and push-ups." },
+                { term: "On duty", cz: "Ve službě", ex: "Corporal Adams is on duty this weekend." },
+                { term: "Off duty", cz: "Mimo službu / volno", ex: "What do you usually do when you are off duty?" },
+                { term: "Leave", cz: "Řádná dovolená / opušťák", ex: "I am taking two weeks of annual leave in July." },
+                { term: "Lights out", cz: "Večerka", ex: "Lights out in the barracks is at 22:30." },
+                { term: "Assembly area", cz: "Shromaždiště", ex: "Proceed immediately to the main assembly area." },
+                { term: "Squad", cz: "Družstvo (cca 8–10 vojáků)", ex: "A squad is usually led by a sergeant or corporal." },
+                { term: "Platoon", cz: "Četa (cca 30 vojáků)", ex: "Three or four squads form a platoon." },
+                { term: "Company", cz: "Rota (cca 100–150 vojáků)", ex: "Bravo Company is stationed in the north camp." },
+                { term: "Battalion", cz: "Prapor (cca 500–800 vojáků)", ex: "Our mechanized battalion is moving to the border." }
             ],
             reading: [
                 {
@@ -556,34 +713,19 @@
                     questions: [
                         {
                             q: "Why is the morning physical training cancelled?",
-                            options: [
-                                "Because the gymnasium is closed.",
-                                "Because of bad weather.",
-                                "Because the Commanding Officer is away.",
-                                "Because breakfast starts earlier."
-                            ],
+                            options: ["Because the gymnasium is closed.", "Because of bad weather.", "Because the Commanding Officer is away.", "Because breakfast starts earlier."],
                             answer: 1,
                             explanation: "V textu je uvedeno: 'cancelled due to heavy rain' (zrušeno kvůli silnému dešti)."
                         },
                         {
                             q: "Where and when must the platoons meet?",
-                            options: [
-                                "Outside at 06:30",
-                                "In the Dining Facility at 07:45",
-                                "In Building C at 07:00",
-                                "At the main gate at 08:30"
-                            ],
+                            options: ["Outside at 06:30", "In the Dining Facility at 07:45", "In Building C at 07:00", "At the main gate at 08:30"],
                             answer: 2,
                             explanation: "Text uvádí: 'all platoons will meet in Building C (Main Gymnasium) at 07:00'."
                         },
                         {
                             q: "What must soldiers bring with them?",
-                            options: [
-                                "Sports shoes and raincoats",
-                                "Weapons and helmets",
-                                "Military ID cards and medical books",
-                                "Breakfast vouchers"
-                            ],
+                            options: ["Sports shoes and raincoats", "Weapons and helmets", "Military ID cards and medical books", "Breakfast vouchers"],
                             answer: 2,
                             explanation: "Předposlední věta: 'Soldiers must bring their military ID cards and medical books.'"
                         }
@@ -591,36 +733,14 @@
                 }
             ],
             grammar: [
-                {
-                    q: "Every morning, our platoon ___ a 5-kilometer run around the base.",
-                    options: ["is doing", "does", "do", "did"],
-                    answer: 1,
-                    explanation: "'Every morning' vyjadřuje pravidelnou rutinu (Present Simple). 'Our platoon' je jednotné číslo (it), proto 'does'."
-                },
-                {
-                    q: "Where ___ you yesterday during the afternoon briefing?",
-                    options: ["was", "did", "were", "are"],
-                    answer: 2,
-                    explanation: "Sloveso 'být' v minulém čase pro osobu 'you' má tvar 'were'."
-                },
-                {
-                    q: "All visitors ___ show their ID card at the main checkpoint. It is an order.",
-                    options: ["must", "can", "don't have to", "might"],
-                    answer: 0,
-                    explanation: "Pro striktní povinnost nebo rozkaz používáme modální sloveso 'must'."
-                },
-                {
-                    q: "The convoy leaves ___ 05:30 hours sharp.",
-                    options: ["on", "in", "at", "by"],
-                    answer: 2,
-                    explanation: "Pro přesný čas na hodinách používáme předložku 'at' (at 05:30 hours)."
-                },
-                {
-                    q: "Look! The medical helicopter ___ on the helipad right now.",
-                    options: ["lands", "landed", "is landing", "will land"],
-                    answer: 2,
-                    explanation: "'Look!' a 'right now' značí děj probíhající v tento okamžik -> přítomný čas průběhový (is landing)."
-                }
+                { q: "Every morning, our platoon ___ a 5-kilometer run around the base.", options: ["is doing", "does", "do", "did"], answer: 1, explanation: "'Every morning' značí pravidelnou rutinu (Present Simple). 'Platoon' je jednotné číslo -> 'does'." },
+                { q: "Where ___ you yesterday during the afternoon weapon inspection?", options: ["was", "did", "were", "are"], answer: 2, explanation: "Minulý tvar slovesa 'to be' pro osobu 'you' je 'were'." },
+                { q: "All visitors ___ show their ID card at the main checkpoint. It is an order.", options: ["must", "can", "don't have to", "might"], answer: 0, explanation: "Pro striktní rozkaz a povinnost používáme 'must'." },
+                { q: "The supply truck leaves ___ 05:30 hours sharp.", options: ["on", "in", "at", "by"], answer: 2, explanation: "Pro přesný čas na hodinách používáme předložku 'at'." },
+                { q: "Look! The medical helicopter ___ on the helipad right now.", options: ["lands", "landed", "is landing", "will land"], answer: 2, explanation: "'Look!' a 'right now' značí právě probíhající děj -> Present Continuous (is landing)." },
+                { q: "Private Miller ___ his rifle before he went to the mess hall.", options: ["clean", "cleaned", "is cleaning", "cleans"], answer: 1, explanation: "Věta je v minulém čase ('went'), proto i první sloveso je v Past Simple ('cleaned')." },
+                { q: "How ___ magazines do you have in your vest?", options: ["much", "many", "any", "some"], answer: 1, explanation: "'Magazines' (zásobníky) jsou počitatelné podstatné jméno v množném čísle -> 'How many'." },
+                { q: "There isn't ___ ammunition left in this box.", options: ["many", "some", "any", "no"], answer: 2, explanation: "'Ammunition' je v angličtině nepočitatelné a věta je záporná -> 'any'." }
             ]
         },
 
@@ -629,64 +749,76 @@
             theory: [
                 {
                     title: "Cíl zkoušky STANAG 2 (Functional Level)",
-                    content: "Úroveň SLP 2 je nejčastějším požadavkem pro zahraniční mise a velitelské pozice. Testuje schopnost popisovat události v minulosti, současnosti i budoucnosti, vysvětlovat příčiny a následky, podávat ucelená hlášení (SITREP, MEDEVAC) a reagovat na nečekané pracovní komplikace."
+                    content: "Úroveň SLP 2 je standardem pro zahraniční operace a velitelské pozice. Testuje schopnost podrobně popisovat události v minulosti, současnosti i budoucnosti, podávat hlášení (SITREP, MEDEVAC), vysvětlovat příčiny a důsledky komplikací a vést věcnou pracovní komunikaci."
                 },
                 {
                     title: "Klíčová gramatika pro SLP 2",
                     list: [
-                        "Předpřítomný čas (Present Perfect) vs. Minulý čas (Past Simple) – vazba děje na přítomnost.",
-                        "Minulý čas průběhový (Past Continuous) – popis okolností incidentu (While we were patrolling, an IED exploded).",
-                        "Trpný rod (Passive Voice) – v oficiálních hlášeních velmi častý (The bridge was damaged, supplies were delivered).",
-                        "Podmínkové věty 1. a 2. typu (First & Second Conditional) – reálné plány a hypotetické scénáře.",
-                        "Nepřímá řeč (Reported Speech) – tlumočení rozkazů a závěrů z porad."
+                        "Předpřítomný čas (Present Perfect) vs. Minulý čas (Past Simple) – dopad minulých událostí na současnou situaci.",
+                        "Minulý čas průběhový (Past Continuous) – popis okolností incidentu (While the convoy was crossing the bridge...).",
+                        "Trpný rod (Passive Voice) – v hlášeních klíčový (Two vehicles were damaged, the road has been blocked).",
+                        "Podmínkové věty 1. a 2. typu (First & Second Conditional) – taktické varianty a hypotetické scénáře.",
+                        "Nepřímá řeč (Reported Speech) – tlumočení rozkazů a informací od spojenců."
                     ]
                 },
                 {
                     title: "Taktické tipy ke zkoušce",
-                    content: "Ve čtení i poslechu na úrovni 2 často bývají tzv. distraktory – v textu zazní slovo z otázky, ale v opačném významu. Sledujte spojky jako 'however', 'Full execution was delayed due to...', 'although' a 'despite'."
+                    content: "Pozor na tzv. distraktory ve čtení a poslechu: v textu často zazní slovo z nabízené odpovědi, ale se záporným nebo pozměněným významem. Sledujte spojky obratu jako 'however', 'despite', 'nevertheless', 'instead of' a 'resulting in'."
                 }
             ],
             vocab: [
-                {
-                    term: "Reconnaissance (Recon)",
-                    cz: "Průzkum (terénu / nepřítele)",
-                    example: "The drone unit conducted aerial reconnaissance of the valley.",
-                    q: "Before crossing the river, we sent a small team to conduct ___.",
-                    options: ["reconnaissance", "retirement", "reimbursement", "redundancy"],
-                    answer: 0
-                },
-                {
-                    term: "Casualties",
-                    cz: "Ztráty (zranění i padlí)",
-                    example: "Fortunately, the ambush resulted in zero friendly casualties.",
-                    q: "The field hospital was prepared to receive ___ after the explosion.",
-                    options: ["casualties", "customs", "currencies", "curfews"],
-                    answer: 0
-                },
-                {
-                    term: "Curfew",
-                    cz: "Zákaz vycházení",
-                    example: "Local authorities imposed a strict curfew from 21:00 to 05:00.",
-                    q: "To restore order in the town, the peacekeeping force enforced a night-time ___.",
-                    options: ["curfew", "cushion", "cargo", "conscript"],
-                    answer: 0
-                },
-                {
-                    term: "Interoperability",
-                    cz: "Schopnost vzájemné spolupráce (jednotek a systémů NATO)",
-                    example: "Joint exercises improve interoperability between allied forces.",
-                    q: "Using standardized radio protocols increases ___ among NATO members.",
-                    options: ["interoperability", "insubordination", "interrogation", "interruption"],
-                    answer: 0
-                },
-                {
-                    term: "Rules of Engagement (ROE)",
-                    cz: "Pravidla pro použití síly / nasazení",
-                    example: "All troops must strictly follow the Rules of Engagement.",
-                    q: "The ___ specify when soldiers are permitted to open fire.",
-                    options: ["Rules of Engagement", "Rates of Exchange", "Routes of Evacuation", "Ranks of Enlistment"],
-                    answer: 0
-                }
+                { term: "Reconnaissance (Recon)", cz: "Průzkum (terénu / nepřítele)", ex: "The unit conducted aerial reconnaissance of the valley." },
+                { term: "Patrol", cz: "Hlídka / patrola", ex: "A foot patrol noticed fresh tire tracks near the border." },
+                { term: "Ambush", cz: "Léčka / přepadení ze zálohy", ex: "The convoy was caught in an ambush in the mountain pass." },
+                { term: "Ceasefire", cz: "Příměří / zastavení palby", ex: "Both sides agreed to a 48-hour ceasefire." },
+                { term: "Curfew", cz: "Zákaz vycházení", ex: "Local authorities imposed a night curfew from 21:00 to 05:00." },
+                { term: "Casualties", cz: "Ztráty (zranění i padlí)", ex: "The explosion resulted in three civilian casualties." },
+                { term: "Fatality", cz: "Smrtelný případ / oběť na životě", ex: "Fortunately, there were no fatalities during the crash." },
+                { term: "Reinforcements", cz: "Posily", ex: "The commander requested immediate reinforcements." },
+                { term: "Evacuation", cz: "Evakuace", ex: "Severe flooding forced the evacuation of the village." },
+                { term: "MEDEVAC", cz: "Zdravotnický odsun (Medical Evacuation)", ex: "Call a 9-line MEDEVAC for the wounded gunner." },
+                { term: "SITREP", cz: "Hlášení o situaci (Situation Report)", ex: "Submit a detailed SITREP to HQ every four hours." },
+                { term: "Rules of Engagement (ROE)", cz: "Pravidla pro použití síly", ex: "Our troops strictly followed the Rules of Engagement." },
+                { term: "Forward Operating Base (FOB)", cz: "Předsunutá operační základna", ex: "Supplies were flown directly to FOB Falcon." },
+                { term: "Improvised Explosive Device (IED)", cz: "Nástražný výbušný systém", ex: "An IED was detected beside the main highway." },
+                { term: "Minefield", cz: "Minové pole", ex: "Engineers marked the edges of the old minefield." },
+                { term: "Ordnance", cz: "Munice / výbušniny / výzbroj", ex: "Unexploded ordnance poses a threat to local farmers." },
+                { term: "EOD (Explosive Ordnance Disposal)", cz: "Pyrotechnická služba / likvidace munice", ex: "The EOD team safely neutralized the roadside bomb." },
+                { term: "Shrapnel", cz: "Střepiny", ex: "His body armor protected him from flying shrapnel." },
+                { term: "Suppressing fire", cz: "Krycí / potlačovací palba", ex: "Provide suppressing fire while First Squad advances." },
+                { term: "Friendly fire", cz: "Palba do vlastních řad", ex: "Clear radio communication prevents friendly fire incidents." },
+                { term: "Collateral damage", cz: "Vedlejší škody (na civilních objektech)", ex: "Precision guidance minimizes collateral damage." },
+                { term: "Non-combatant", cz: "Nebojující osoba / civilista", ex: "International law protects non-combatants in conflict zones." },
+                { term: "Insurgent", cz: "Povstalec / vzbouřenec", ex: "Insurgents attacked the communication tower at dawn." },
+                { term: "Hostile forces", cz: "Nepřátelské síly", ex: "Hostile forces were spotted retreating north." },
+                { term: "Militia", cz: "Milice / ozbrojená skupina", ex: "The local militia agreed to hand over heavy weapons." },
+                { term: "Smuggling", cz: "Pašování", ex: "Border patrols are cracking down on weapons smuggling." },
+                { term: "Contraband", cz: "Pašované zboží / kontraband", ex: "Search the vehicle for hidden contraband." },
+                { term: "Confiscate", cz: "Zabavit / zkonfiskovat", ex: "Soldiers confiscated three unregistered rifles." },
+                { term: "Detain", cz: "Zadržet / zajistit osobu", ex: "Two suspects were detained at the checkpoint." },
+                { term: "Interrogation", cz: "Výslech", ex: "Military intelligence conducted the interrogation." },
+                { term: "Interpreter", cz: "Tlumočník", ex: "Our patrol always works with a local interpreter." },
+                { term: "Liaison officer", cz: "Styčný důstojník", ex: "The liaison officer coordinates with host nation police." },
+                { term: "Humanitarian aid", cz: "Humanitární pomoc", ex: "The convoy delivered 20 tons of humanitarian aid." },
+                { term: "Refugee camp", cz: "Uprchlický tábor", ex: "Field medics set up a clinic near the refugee camp." },
+                { term: "Displaced persons", cz: "Vysídlené osoby (uprchlíci)", ex: "Thousands of displaced persons need shelter before winter." },
+                { term: "Supply line", cz: "Zásobovací trasa / linie", ex: "Securing the main supply line is our top priority." },
+                { term: "Convoy", cz: "Konvoj / kolona", ex: "The logistics convoy consists of twelve armored trucks." },
+                { term: "Armored Personnel Carrier (APC)", cz: "Obrněný transportér", ex: "The squad mounted the APC and moved out." },
+                { term: "Unmanned Aerial Vehicle (UAV)", cz: "Bezpilotní prostředek (dron)", ex: "A tactical UAV is monitoring the ridge." },
+                { term: "Airspace", cz: "Vzdušný prostor", ex: "Allied fighters are patrolling the restricted airspace." },
+                { term: "Drop zone (DZ)", cz: "Shozová / seskoková zóna", ex: "Paratroopers landed safely in the designated drop zone." },
+                { term: "Extraction point", cz: "Místo vyzvednutí / stažení", ex: "Reach the extraction point before 04:00 hours." },
+                { term: "Grid coordinates", cz: "Souřadnice v mapové síti", ex: "Send the exact grid coordinates of the target." },
+                { term: "Topography", cz: "Členitost terénu / místopis", ex: "Mountainous topography slowed down the advance." },
+                { term: "Visibility", cz: "Viditelnost", ex: "Dense fog reduced visibility to less than 50 meters." },
+                { term: "Night vision goggles (NVG)", cz: "Brýle pro noční vidění", ex: "Drivers used NVGs during the blackout convoy." },
+                { term: "Thermal imaging", cz: "Termovize", ex: "Thermal imaging revealed heat signatures in the forest." },
+                { term: "Jamming", cz: "Rušení rádiového signálu", ex: "Enemy electronic jamming disrupted our GPS." },
+                { term: "Chain of command", cz: "Velitelský řetězec / stupeň velení", ex: "Report the issue through the proper chain of command." },
+                { term: "Insubordination", cz: "Neuposlechnutí rozkazu / neposlušnost", ex: "Open insubordination will not be tolerated." },
+                { term: "Court-martial", cz: "Vojenský soud", ex: "He faced a court-martial for negligence on duty." },
+                { term: "Interoperability", cz: "Schopnost vzájemné spolupráce sil", ex: "NATO exercises strengthen interoperability among allies." }
             ],
             reading: [
                 {
@@ -695,34 +827,19 @@
                     questions: [
                         {
                             q: "Why did Convoy ALPHA-3 have to stop?",
-                            options: [
-                                "It was ambushed by hostile forces near Bridge 4.",
-                                "One of the heavy armored vehicles broke down.",
-                                "The bridge ahead was damaged by severe weather.",
-                                "Local police blocked the road due to a protest."
-                            ],
+                            options: ["It was ambushed by hostile forces near Bridge 4.", "One of the heavy armored vehicles broke down.", "The bridge ahead was damaged by severe weather.", "Local police blocked the road due to a protest."],
                             answer: 2,
                             explanation: "V textu stojí: 'severe overnight flooding had weakened the bridge's concrete pillars, making it unsafe'."
                         },
                         {
                             q: "How did the convoy commander respond to the situation?",
-                            options: [
-                                "He ordered the convoy to return to the main base.",
-                                "He chose an alternative route through the mountains.",
-                                "He waited for engineers to repair the bridge first.",
-                                "He requested air transport for the generator parts."
-                            ],
+                            options: ["He ordered the convoy to return to the main base.", "He chose an alternative route through the mountains.", "He waited for engineers to repair the bridge first.", "He requested air transport for the generator parts."],
                             answer: 1,
                             explanation: "Text uvádí: 'the convoy commander decided to reroute via the eastern mountain pass'."
                         },
                         {
                             q: "What is the consequence of this incident?",
-                            options: [
-                                "Medical supplies were lost in the flood.",
-                                "The convoy will arrive four hours later than planned.",
-                                "FOB Viper had to be evacuated.",
-                                "Hostile activity increased in the eastern pass."
-                            ],
+                            options: ["Medical supplies were lost in the flood.", "The convoy will arrive four hours later than planned.", "FOB Viper had to be evacuated.", "Hostile activity increased in the eastern pass."],
                             answer: 1,
                             explanation: "'Consequently, the estimated time of arrival (ETA) has been pushed back by four hours.'"
                         }
@@ -730,36 +847,14 @@
                 }
             ],
             grammar: [
-                {
-                    q: "While the patrol ___ through the village, they noticed a suspicious vehicle.",
-                    options: ["drove", "was driving", "has driven", "drives"],
-                    answer: 1,
-                    explanation: "Dlouhodobější děj na pozadí v minulosti (While...) vyjadřujeme minulým časem průběhovým (was driving)."
-                },
-                {
-                    q: "Two damaged armored personnel carriers ___ to the maintenance depot yesterday.",
-                    options: ["towed", "have towed", "were towed", "are towing"],
-                    answer: 2,
-                    explanation: "Vozidla byla odtažena (trpný rod v minulém čase zbog 'yesterday' -> were towed)."
-                },
-                {
-                    q: "If we ___ better satellite imagery, we would locate their supply line much faster.",
-                    options: ["have", "had", "would have", "will have"],
-                    answer: 1,
-                    explanation: "2. kondicionál (hypotetická přítomnost): If + Past Simple (had), + would + infinitiv."
-                },
-                {
-                    q: "Our battalion ___ deployed in this sector since November.",
-                    options: ["is", "was", "has been", "had been"],
-                    answer: 2,
-                    explanation: "Děj, který začal v minulosti (since November) a stále trvá, vyžaduje předpřítomný čas (has been)."
-                },
-                {
-                    q: "The intelligence officer asked us whether we ___ any unusual radio traffic.",
-                    options: ["intercepted", "had intercepted", "intercept", "will intercept"],
-                    answer: 1,
-                    explanation: "Nepřímá otázka v minulosti – posun času z minulého do předminulého (had intercepted)."
-                }
+                { q: "While the patrol ___ through the valley, they noticed a suspicious wire.", options: ["drove", "was driving", "has driven", "drives"], answer: 1, explanation: "Děj probíhající na pozadí v minulosti (While...) vyjadřujeme pomocí Past Continuous (was driving)." },
+                { q: "Two damaged armored vehicles ___ to the maintenance depot yesterday.", options: ["towed", "have towed", "were towed", "are towing"], answer: 2, explanation: "Trpný rod v minulém čase ('yesterday') -> were towed (byly odtaženy)." },
+                { q: "If we ___ better satellite imagery, we would locate their supply route much faster.", options: ["have", "had", "would have", "will have"], answer: 1, explanation: "2. kondicionál (hypotetická přítomnost): If + Past Simple (had), + would + infinitiv." },
+                { q: "Our task force ___ deployed in this sector since November.", options: ["is", "was", "has been", "had been"], answer: 2, explanation: "Děj trvající od minulosti (since November) až do přítomnosti -> Present Perfect (has been)." },
+                { q: "The intelligence officer asked us whether we ___ any unusual radio traffic.", options: ["intercepted", "had intercepted", "intercept", "will intercept"], answer: 1, explanation: "Nepřímá řeč v minulosti: posun z Past Simple do Past Perfect (had intercepted)." },
+                { q: "The bridge cannot be used ___ the combat engineers reinforce its pillars.", options: ["unless", "if", "despite", "because"], answer: 0, explanation: "'Unless' znamená 'pokud ne / dokud ne' (dokud ženisté nezpevní pilíře)." },
+                { q: "All non-essential personnel were ordered ___ the forward base immediately.", options: ["evacuate", "to evacuate", "evacuating", "evacuated"], answer: 1, explanation: "Po vazbě 'be ordered' následuje infinitiv s 'to' (to evacuate)." },
+                { q: "Despite ___ heavy rain, the aerial reconnaissance mission was completed.", options: ["it was", "of the", "the", "there was"], answer: 2, explanation: "Předložka 'Despite' (bez 'of') se pojí přímo s jmennou frází ('Despite the heavy rain')." }
             ]
         },
 
@@ -768,64 +863,76 @@
             theory: [
                 {
                     title: "Cíl zkoušky STANAG 3 (Professional Level)",
-                    content: "Úroveň SLP 3 vyžaduje schopnost plynule komunikovat o komplexních, abstraktních a strategických tématech (hybridní válčení, kybernetická bezpečnost, mezinárodní právo, obranné rozpočty, etika ve vojenství). Musíte rozlišovat jemné významové odstíny, ironii, postoj autora a číst mezi řádky."
+                    content: "Úroveň SLP 3 vyžaduje schopnost plynule a přesně komunikovat o komplexních, abstraktních a strategických tématech (hybridní válčení, kybernetická bezpečnost, geopolitika, obranné rozpočty, mezinárodní právo). Musíte rozumět nuancím, číst mezi řádky a rozpoznat postoj či skepsi autora."
                 },
                 {
                     title: "Klíčová gramatika pro SLP 3",
                     list: [
-                        "Inverze po záporných příslovcích na začátku věty (Hardly had the treaty been signed when..., Not only does this pose a threat...).",
-                        "Smíšené a minulé kondicionály (3rd & Mixed Conditionals) – analýza minulých selhání a jejich dopadů na přítomnost.",
-                        "Konjunktiv / Subjunctive (It is imperative that the alliance remain united).",
-                        "Pokročilé spojovací výrazy (Notwithstanding, Albeit, Consequently, Conversely, Provided that).",
-                        "Modální slovesa v minulosti pro vyjádření míry jistoty a kritiky (should have anticipated, must have been compromised)."
+                        "Inverze po záporných a omezujících výrazech na začátku věty (Not only did the attack paralyze..., Seldom has the alliance faced...).",
+                        "Minulé a smíšené kondicionály (3rd & Mixed Conditionals) – hodnocení minulých strategických rozhodnutí.",
+                        "Konjunktiv / Subjunctive ve formálním stylu (It is imperative that the treaty be ratified).",
+                        "Pokročilé konektory (Notwithstanding, Albeit, Conversely, Insofar as, Prerequisite).",
+                        "Modální slovesa v minulosti pro dedukci a kritiku (must have been compromised, ought to have anticipated)."
                     ]
                 },
                 {
                     title: "Taktické tipy ke zkoušce",
-                    content: "U čtení na SLP 3 nejde o pouhé vyhledání faktu, ale o pochopení záměru autora (zda autor politiku kritizuje, je skeptický, nebo opatrně optimistický). V písemném projevu strukturujte esej do jasných odstavců s využitím formálního rejstříku (vyhýbejte se hovorové angličtině)."
+                    content: "U čtení na SLP 3 otázky často míří na implikace textu a tón autora (např. 'opatrně optimistický', 'kritický k jednostranným krokům'). Ve vlastní argumentaci vždy uvádějte argument i protiargument (tzv. hedging: 'While it is true that..., one must also consider...')."
                 }
             ],
             vocab: [
-                {
-                    term: "Deterrence",
-                    cz: "Odstrašení (strategické odrazení protivníka od útoku)",
-                    example: "Credible deterrence remains the cornerstone of collective defense.",
-                    q: "Maintaining a strong rapid-reaction force serves as a vital ___ against potential aggression.",
-                    options: ["deterrence", "deference", "deficiency", "detachment"],
-                    answer: 0
-                },
-                {
-                    term: "Clandestine",
-                    cz: "Utajený / skrytý / tajný (operace)",
-                    example: "Intelligence agencies uncovered a clandestine network funding cyber-attacks.",
-                    q: "Special forces conducted a ___ operation behind enemy lines without official acknowledgment.",
-                    options: ["clandestine", "complacent", "conspicuous", "compulsory"],
-                    answer: 0
-                },
-                {
-                    term: "Attrition warfare",
-                    cz: "Opotřebovávací válka",
-                    example: "Both sides sought to avoid a prolonged war of attrition.",
-                    q: "Instead of a swift decisive victory, the conflict turned into costly ___.",
-                    options: ["attrition warfare", "arbitrary jurisdiction", "bilateral appeasement", "collateral mitigation"],
-                    answer: 0
-                },
-                {
-                    term: "Proliferation",
-                    cz: "Šíření / bujení (zejména zbraní hromadného ničení či technologií)",
-                    example: "The treaty aims to curb the proliferation of autonomous lethal weapons.",
-                    q: "International inspectors are monitoring the ___ of dual-use ballistic technologies.",
-                    options: ["proliferation", "procrastination", "reconciliation", "remuneration"],
-                    answer: 0
-                },
-                {
-                    term: "Plausible deniability",
-                    cz: "Věrohodné popření (možnost popřít odpovědnost u hybridních útoků)",
-                    example: "State-sponsored hackers often operate through proxies to maintain plausible deniability.",
-                    q: "By using unmarked paramilitary groups, the regime sought to preserve ___.",
-                    options: ["plausible deniability", "unconditional surrender", "mandatory conscription", "sovereign immunity"],
-                    answer: 0
-                }
+                { term: "Deterrence", cz: "Odstrašení (strategické odrazení protivníka)", ex: "Credible nuclear and conventional deterrence prevents aggression." },
+                { term: "Proliferation", cz: "Šíření (zbraní hromadného ničení / technologií)", ex: "The treaty aims to curb the proliferation of ballistic missiles." },
+                { term: "Attrition warfare", cz: "Opotřebovávací válka", ex: "The conflict degenerated into a costly war of attrition." },
+                { term: "Asymmetric warfare", cz: "Asymetrické válčení", ex: "Guerrilla tactics are a classic example of asymmetric warfare." },
+                { term: "Hybrid threats", cz: "Hybridní hrozby", ex: "Countering hybrid threats requires military and civilian cooperation." },
+                { term: "Plausible deniability", cz: "Věrohodné popření odpovědnosti", ex: "State-sponsored hackers operate through proxies for plausible deniability." },
+                { term: "Clandestine operation", cz: "Utajená / skrytá operace", ex: "Intelligence agencies uncovered a clandestine supply network." },
+                { term: "Counter-insurgency (COIN)", cz: "Protipovstalecký boj / operace", ex: "Winning local support is vital in counter-insurgency doctrine." },
+                { term: "Psychological operations (PSYOPS)", cz: "Psychologické operace", ex: "PSYOPS units broadcast messages to undermine enemy morale." },
+                { term: "Disinformation campaign", cz: "Dezinformační kampaň", ex: "A coordinated disinformation campaign targeted public trust." },
+                { term: "Cyber espionage", cz: "Kybernetická špionáž", ex: "Defense contractors are prime targets for state cyber espionage." },
+                { term: "Critical infrastructure", cz: "Kritická infrastruktura", ex: "Power grids and ports are part of national critical infrastructure." },
+                { term: "Force projection", cz: "Projekce síly (schopnost nasadit síly daleko)", ex: "Aircraft carriers remain a primary instrument of force projection." },
+                { term: "Force multiplier", cz: "Násobič sil (faktor zvyšující bojovou hodnotu)", ex: "Real-time satellite intelligence acts as a major force multiplier." },
+                { term: "Operational readiness", cz: "Operační pohotovost / připravenost", ex: "Budget cuts have negatively affected operational readiness." },
+                { term: "Combat effectiveness", cz: "Bojová efektivita / bojeschopnost", ex: "Fatigue and poor logistics eroded the unit's combat effectiveness." },
+                { term: "Air superiority", cz: "Vzdušná nadvláda", ex: "Ground offensives rarely succeed without achieving air superiority." },
+                { term: "Maritime domain awareness", cz: "Přehled o situaci v námořním prostoru", ex: "Coastal radars enhance maritime domain awareness in the Baltic." },
+                { term: "Pre-emptive strike", cz: "Preventivní (předstižný) úder", ex: "The cabinet debated the legality of a pre-emptive strike." },
+                { term: "Retaliation", cz: "Odveta / odvetné opatření", ex: "The cyber-attack provoked swift diplomatic and economic retaliation." },
+                { term: "Escalation dominance", cz: "Kontrola nad stupňováním konfliktu", ex: "Both superpowers sought escalation dominance during the crisis." },
+                { term: "De-escalation", cz: "Zmírnění napětí / deeskalace", ex: "Direct military hotlines are essential for crisis de-escalation." },
+                { term: "Brinkmanship", cz: "Politika balancování na hraně války", ex: "Reckless nuclear brinkmanship destabilizes the entire region." },
+                { term: "Appeasement", cz: "Politika ústupků agresorovi", ex: "History demonstrates that appeasement rarely satisfies an aggressor." },
+                { term: "Sovereignty", cz: "Suverenita / státní svrchovanost", ex: "Violating national airspace is a breach of sovereignty." },
+                { term: "Territorial integrity", cz: "Územní celistvost", ex: "The UN Charter upholds the territorial integrity of member states." },
+                { term: "Annexation", cz: "Anexe (násilné připojení cizího území)", ex: "The international community refused to recognize the annexation." },
+                { term: "Proxy war", cz: "Zástupná válka", ex: "Regional powers turned the civil conflict into a proxy war." },
+                { term: "Belligerent", cz: "Válčící strana / účastník konfliktu", ex: "All belligerents must respect international humanitarian law." },
+                { term: "Non-proliferation treaty", cz: "Smlouva o nešíření zbraní", ex: "Withdrawing from the non-proliferation treaty sparked global concern." },
+                { term: "Arms embargo", cz: "Zbrojní embargo", ex: "The Security Council imposed a comprehensive arms embargo." },
+                { term: "Economic sanctions", cz: "Ekonomické sankce", ex: "Targeted economic sanctions froze the regime's foreign assets." },
+                { term: "Defense procurement", cz: "Obranné akvizice / nákup výzbroje", ex: "Bureaucratic delays often plague defense procurement projects." },
+                { term: "Austerity measures", cz: "Úsporná opatření / rozpočtové škrty", ex: "Post-crisis austerity measures led to the reduction of tank brigades." },
+                { term: "Obsolescence", cz: "Zastarávání (technické či morální)", ex: "Rapid technological change accelerates equipment obsolescence." },
+                { term: "Dual-use technology", cz: "Technologie dvojího užití (civilní i vojenské)", ex: "Export controls apply strictly to dual-use technologies." },
+                { term: "Autonomous lethal weapons", cz: "Autonomní smrtící zbraňové systémy", ex: "Ethicists warn against deploying autonomous lethal weapons without human oversight." },
+                { term: "Electronic countermeasures (ECM)", cz: "Elektronická protiopatření", ex: "Modern fighter jets rely heavily on electronic countermeasures." },
+                { term: "Reconnaissance-strike complex", cz: "Průzkumně-úderný komplex", ex: "Linking drones directly to artillery creates a lethal reconnaissance-strike complex." },
+                { term: "Command and Control (C2)", cz: "Velení a řízení", ex: "Disrupting enemy Command and Control nodes is a primary objective." },
+                { term: "Situational awareness", cz: "Situační přehled (povědomí o bojišti)", ex: "Encrypted data links provide commanders with superior situational awareness." },
+                { term: "Fog of war", cz: "Mlha války (nejistota a chaos v boji)", ex: "Even advanced sensors cannot completely eliminate the fog of war." },
+                { term: "Proportionality", cz: "Princip přiměřenosti (v mezinárodním právu)", ex: "Any military response must adhere to the principle of proportionality." },
+                { term: "Geneva Conventions", cz: "Ženevské úmluvy", ex: "Prisoners of war are entitled to protection under the Geneva Conventions." },
+                { term: "War crimes tribunal", cz: "Tribunál pro válečné zločiny", ex: "Commanders were indicted by an international war crimes tribunal." },
+                { term: "Extradition", cz: "Vydání osoby k trestnímu stíhání do ciziny", ex: "The government rejected the extradition request." },
+                { term: "Diplomatic immunity", cz: "Diplomatická imunita", ex: "The military attaché was expelled despite holding diplomatic immunity." },
+                { term: "Bilateral agreement", cz: "Dvoustranná (bilaterální) dohoda", ex: "Host nation support is regulated by a bilateral defense agreement." },
+                { term: "Multilateralism", cz: "Mnohostranná spolupráce (multilateralismus)", ex: "Small nations rely on multilateralism and alliance frameworks." },
+                { term: "Burden sharing", cz: "Sdílení břemene / nákladů v alianci", ex: "Equitable burden sharing remains a central debate within NATO." },
+                { term: "Collective defense", cz: "Kolektivní obrana (Článek 5)", ex: "Article 5 enshrines the principle of collective defense." },
+                { term: "Strategic autonomy", cz: "Strategická autonomie (soběstačnost)", ex: "European leaders debated the concept of strategic autonomy in defense manufacturing." }
             ],
             reading: [
                 {
@@ -834,34 +941,19 @@
                     questions: [
                         {
                             q: "What is the main concern raised by critics regarding autonomous drone swarms?",
-                            options: [
-                                "They are too vulnerable to traditional electronic warfare jamming.",
-                                "They reduce the time available for human oversight, increasing escalation risks.",
-                                "They are significantly more expensive than conventional manned aircraft.",
-                                "They completely replace the need for strategic planners."
-                            ],
+                            options: ["They are too vulnerable to traditional electronic warfare jamming.", "They reduce the time available for human oversight, increasing escalation risks.", "They are significantly more expensive than conventional manned aircraft.", "They completely replace the need for strategic planners."],
                             answer: 1,
                             explanation: "Kritici varují, že zkrácení rozhodovacího cyklu oslabuje lidskou kontrolu a zvyšuje riziko nechtěné eskalace ('erodes meaningful human control, heightening the risk of unintended escalation')."
                         },
                         {
                             q: "Why do supporters favor algorithmic decision-making on the battlefield?",
-                            options: [
-                                "It strengthens diplomatic channels during crises.",
-                                "It reduces friendly losses and overcomes signal jamming.",
-                                "It eliminates the need for doctrinal frameworks.",
-                                "It slows down the tempo of modern warfare."
-                            ],
+                            options: ["It strengthens diplomatic channels during crises.", "It reduces friendly losses and overcomes signal jamming.", "It eliminates the need for doctrinal frameworks.", "It slows down the tempo of modern warfare."],
                             answer: 1,
                             explanation: "Zastánci tvrdí, že algoritmy minimalizují lidské ztráty a neutralizují rušení elektronického boje ('minimizes human casualties and neutralizes electronic warfare jamming')."
                         },
                         {
                             q: "What is the author's overall conclusion in the passage?",
-                            options: [
-                                "Autonomous systems should be banned immediately under international law.",
-                                "Conventional command structures are no longer necessary.",
-                                "Autonomous weapons require stricter doctrinal regulation rather than replacing human command.",
-                                "AI algorithms are currently incapable of operating in combat."
-                            ],
+                            options: ["Autonomous systems should be banned immediately under international law.", "Conventional command structures are no longer necessary.", "Autonomous weapons require stricter doctrinal regulation rather than replacing human command.", "AI algorithms are currently incapable of operating in combat."],
                             answer: 2,
                             explanation: "Poslední věta shrnuje, že autonomní systémy nedělají velení zastaralým, ale vyžadují mnohem přísnější doktrinální rámec."
                         }
@@ -869,84 +961,67 @@
                 }
             ],
             grammar: [
-                {
-                    q: "Not only ___ the communication grid, but the cyber-attack also disrupted logistics.",
-                    options: ["it paralyzed", "did it paralyze", "paralyzed it", "has it paralyze"],
-                    answer: 1,
-                    explanation: "Po 'Not only' na začátku věty následuje inverze (otázkový slovosled): 'did it paralyze'."
-                },
-                {
-                    q: "Had the intelligence report been shared earlier, the alliance ___ caught off guard.",
-                    options: ["would not be", "will not be", "would not have been", "had not been"],
-                    answer: 2,
-                    explanation: "3. kondicionál s inverzí (Had + podměť + příčestí minulé) odkazující na minulost -> 'would not have been'."
-                },
-                {
-                    q: "It is imperative that every coalition member ___ at least 2% of GDP to defense.",
-                    options: ["allocates", "allocate", "allocated", "is allocating"],
-                    answer: 1,
-                    explanation: "Po vazbě 'It is imperative that...' se ve formální angličtině používá konjunktiv (Subjunctive) – základní tvar slovesa bez koncovky -s ('allocate')."
-                },
-                {
-                    q: "___ the severe budget constraints, the modernization program proceeded on schedule.",
-                    options: ["Although", "Notwithstanding", "Even though", "Whereas"],
-                    answer: 1,
-                    explanation: "'the severe budget constraints' je jmenná fráze (nikoli vedlejší věta se slovesem). Před jmennou frází lze použít předložku 'Notwithstanding' (Navzdory)."
-                },
-                {
-                    q: "The encrypted files ___ leaked from the outside; only three senior officers had physical access to the terminal.",
-                    options: ["couldn't have been", "mustn't be", "shouldn't have", "may not be"],
-                    answer: 0,
-                    explanation: "Vyjádření logické nemožnosti v minulosti: 'couldn't have been leaked' (nemohly uniknout zvenčí)."
-                }
+                { q: "Not only ___ the communication grid, but the cyber-attack also disrupted logistics.", options: ["it paralyzed", "did it paralyze", "paralyzed it", "has it paralyze"], answer: 1, explanation: "Po 'Not only' na začátku věty následuje inverze (otázkový slovosled): 'did it paralyze'." },
+                { q: "Had the intelligence report been shared earlier, the alliance ___ caught off guard.", options: ["would not be", "will not be", "would not have been", "had not been"], answer: 2, explanation: "3. kondicionál s inverzí (Had + podmět + příčestí minulé) odkazující na minulost -> 'would not have been'." },
+                { q: "It is imperative that every coalition member ___ at least 2% of GDP to defense.", options: ["allocates", "allocate", "allocated", "is allocating"], answer: 1, explanation: "Po vazbě 'It is imperative that...' se ve formální angličtině používá konjunktiv (Subjunctive) – základní tvar slovesa bez -s ('allocate')." },
+                { q: "___ the severe budget constraints, the modernization program proceeded on schedule.", options: ["Although", "Notwithstanding", "Even though", "Whereas"], answer: 1, explanation: "'the severe budget constraints' je jmenná fráze (bez slovesa). Před jmennou frází použijeme předložku 'Notwithstanding' (Navzdory)." },
+                { q: "The encrypted files ___ leaked from the outside; only three senior officers had physical access to the offline terminal.", options: ["couldn't have been", "mustn't be", "shouldn't have", "may not be"], answer: 0, explanation: "Logická nemožnost v minulosti v trpném rodě: 'couldn't have been leaked'." },
+                { q: "Seldom ___ such a rapid shift in asymmetric warfare tactics.", options: ["we have witnessed", "have we witnessed", "witnessed we", "we witnessed"], answer: 1, explanation: "Po záporném příslovci 'Seldom' na začátku věty musí následovat inverze: 'have we witnessed'." },
+                { q: "The peace treaty was signed, ___ with several controversial territorial concessions.", options: ["albeit", "despite", "however", "whereas"], answer: 0, explanation: "'Albeit' (i když / byť) se elegantně pojí s příslovečným určením nebo předložkovou vazbou ('albeit with...')." },
+                { q: "Were the adversary ___ a pre-emptive cyber strike, our backup satellites would activate automatically.", options: ["launched", "launching", "to launch", "launch"], answer: 2, explanation: "Formální inverze v 2. kondicionálu pro nepravděpodobnou budoucnost: 'Were + podmět + to infinitiv' (Were the adversary to launch)." }
             ]
         }
     };
 
-    // ==========================================
-    // STAV APLIKACE A LOGIKA
-    // ==========================================
+    // =========================================================================
+    // ŘÍZENÍ OBRAZOVEK A STAVU APLIKACE
+    // =========================================================================
     let currentLevel = 1;
-    let currentModule = 'theory';
-    let score = 0;
-    let streak = 0;
+    let currentModule = 'vocab';
 
-    let currentVocabIndex = 0;
-    let vocabMode = 'quiz'; // 'quiz' nebo 'flashcard'
-    let currentGrammarIndex = 0;
+    // Stav pro Slovní zásobu (Flashcards Grid + Kvíz)
+    let vocabMode = 'flashcards'; // 'flashcards' nebo 'quiz'
+    let cardsPerPage = 12;        // Výchozí počet karet na jedné obrazovce
+    let currentCardPage = 0;
+    let vocabSearchQuery = '';
+    let allPageFlipped = false;
+    let currentVocabQuizIdx = 0;
+
+    // Stav pro Čtení a Gramatiku
     let currentReadingQIndex = 0;
+    let currentGrammarIndex = 0;
 
-    function updateHUD() {
-        document.getElementById('hud-level').innerText = `SLP ${currentLevel}`;
-        document.getElementById('hud-score').innerText = score;
-        document.getElementById('hud-streak').innerText = streak;
+    // Přechod z Obrazovky 1 na Obrazovku 2
+    function openStanagLevel(lvl) {
+        currentLevel = lvl;
+        currentCardPage = 0;
+        vocabSearchQuery = '';
+        allPageFlipped = false;
+        currentVocabQuizIdx = 0;
+        currentReadingQIndex = 0;
+        currentGrammarIndex = 0;
+
+        document.getElementById('screen-level-select').style.display = 'none';
+        document.getElementById('screen-training').style.display = 'block';
+
+        document.getElementById('active-level-banner').innerText = stanagData[lvl].name;
+        selectModule(currentModule);
     }
 
-    function selectLevel(lvl) {
-        currentLevel = lvl;
-        currentVocabIndex = 0;
-        currentGrammarIndex = 0;
-        currentReadingQIndex = 0;
-
-        document.querySelectorAll('.level-card').forEach(c => c.classList.remove('active'));
-        document.getElementById(`card-lvl-${lvl}`).classList.add('active');
-
-        updateHUD();
-        renderWorkspace();
+    // Návrat z Obrazovky 2 zpět na Obrazovku 1 (Výběr STANAG 1, 2, 3)
+    function goBackToSelection() {
+        document.getElementById('screen-training').style.display = 'none';
+        document.getElementById('screen-level-select').style.display = 'block';
     }
 
     function selectModule(mod) {
         currentModule = mod;
-        currentVocabIndex = 0;
-        currentGrammarIndex = 0;
-        currentReadingQIndex = 0;
-
         document.querySelectorAll('.module-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${mod}`).classList.add('active');
 
         const labels = {
             theory: 'MODULE: TEORIE & BRIEFING',
-            vocab: 'MODULE: SLOVNÍ ZÁSOBA',
+            vocab: `MODULE: SLOVNÍ ZÁSOBA (52 POJMŮ // MŘÍŽKA KARET & KVÍZ)`,
             reading: 'MODULE: ČTENÍ & POROZUMĚNÍ TEXTU',
             grammar: 'MODULE: TRÉNINK GRAMATIKY'
         };
@@ -972,7 +1047,7 @@
             ws.innerHTML = html;
         } 
         else if (currentModule === 'vocab') {
-            renderVocab(ws, data.vocab);
+            renderVocabSection(ws, data.vocab);
         } 
         else if (currentModule === 'reading') {
             renderReading(ws, data.reading[0]);
@@ -982,64 +1057,158 @@
         }
     }
 
-    // --- SLOVNÍ ZÁSOBA ---
+    // =========================================================================
+    // MODUL SLOVNÍ ZÁSOBY: MŘÍŽKA FLASHCARDS (8–52 NA OBRAZOVCE) + KVÍZ
+    // =========================================================================
     function setVocabMode(mode) {
         vocabMode = mode;
-        currentVocabIndex = 0;
         renderWorkspace();
     }
 
-    function renderVocab(ws, vocabList) {
-        const item = vocabList[currentVocabIndex];
-        let html = `
-            <div class="vocab-mode-switch">
-                <button class="btn-tactical" style="background:${vocabMode === 'quiz' ? 'var(--bf-orange)' : 'var(--bf-cyan)'}" onclick="setVocabMode('quiz')">BOJOVÝ KVÍZ</button>
-                <button class="btn-tactical" style="background:${vocabMode === 'flashcard' ? 'var(--bf-orange)' : 'var(--bf-cyan)'}" onclick="setVocabMode('flashcard')">KARTIČKY (FLASHCARDS)</button>
-            </div>
+    function changeCardsPerPage(val) {
+        cardsPerPage = parseInt(val, 10);
+        currentCardPage = 0;
+        allPageFlipped = false;
+        renderWorkspace();
+    }
+
+    function handleVocabSearch(val) {
+        vocabSearchQuery = val.toLowerCase();
+        currentCardPage = 0;
+        renderWorkspace();
+    }
+
+    function toggleFlipAllOnPage() {
+        allPageFlipped = !allPageFlipped;
+        document.querySelectorAll('.flashcard-item').forEach(card => {
+            if (allPageFlipped) card.classList.add('flipped');
+            else card.classList.remove('flipped');
+        });
+    }
+
+    function renderVocabSection(ws, vocabList) {
+        let toolbarHtml = `
+            <div class="vocab-toolbar">
+                <div class="vocab-controls-left">
+                    <button class="btn-tactical ${vocabMode === 'flashcards' ? 'orange' : ''}" onclick="setVocabMode('flashcards')">
+                        MŘÍŽKA FLASHCARDS (${vocabList.length})
+                    </button>
+                    <button class="btn-tactical ${vocabMode === 'quiz' ? 'orange' : ''}" onclick="setVocabMode('quiz')">
+                        BOJOVÝ KVÍZ SLOVÍČEK
+                    </button>
+                </div>
         `;
 
-        if (vocabMode === 'flashcard') {
-            html += `
-                <div class="question-meta">SLOVÍČKO ${currentVocabIndex + 1} / ${vocabList.length} (KLIKNĚTE PRO OTOČENÍ)</div>
-                <div class="flashcard" onclick="document.getElementById('fc-trans').style.display='block'">
-                    <div class="flashcard-term">${item.term}</div>
-                    <p style="color:var(--text-muted); font-size:1.1rem;">"${item.example}"</p>
-                    <div class="flashcard-translation" id="fc-trans">CZ: ${item.cz}</div>
+        if (vocabMode === 'flashcards') {
+            toolbarHtml += `
+                <div class="vocab-controls-right">
+                    <input type="text" class="search-input" placeholder="Hledat pojem (EN / CZ)..." value="${vocabSearchQuery}" oninput="handleVocabSearch(this.value)">
+                    <select class="select-count" onchange="changeCardsPerPage(this.value)">
+                        <option value="8" ${cardsPerPage === 8 ? 'selected' : ''}>8 karet na obrazovce</option>
+                        <option value="12" ${cardsPerPage === 12 ? 'selected' : ''}>12 karet na obrazovce</option>
+                        <option value="24" ${cardsPerPage === 24 ? 'selected' : ''}>24 karet na obrazovce</option>
+                        <option value="52" ${cardsPerPage === 52 ? 'selected' : ''}>Všech 52 karet najednou</option>
+                    </select>
+                    <button class="btn-tactical" onclick="toggleFlipAllOnPage()">OTOČIT VŠECHNY</button>
                 </div>
-                <div class="action-bar">
-                    <span>Kliknutím na kartu zobrazíte český překlad.</span>
-                    <button class="btn-tactical" onclick="nextVocab(${vocabList.length})">DALŠÍ POJEM ►</button>
+            </div>`;
+
+            const filtered = vocabList
+                .map((item, idx) => ({ ...item, origIndex: idx + 1 }))
+                .filter(item => item.term.toLowerCase().includes(vocabSearchQuery) || item.cz.toLowerCase().includes(vocabSearchQuery));
+
+            const totalPages = Math.max(1, Math.ceil(filtered.length / cardsPerPage));
+            if (currentCardPage >= totalPages) currentCardPage = 0;
+
+            const startIdx = currentCardPage * cardsPerPage;
+            const pageItems = filtered.slice(startIdx, startIdx + cardsPerPage);
+
+            let gridHtml = `<div class="flashcards-grid">`;
+            pageItems.forEach(item => {
+                gridHtml += `
+                    <div class="flashcard-item ${allPageFlipped ? 'flipped' : ''}" onclick="this.classList.toggle('flipped')">
+                        <div>
+                            <div class="fc-num">
+                                <span>#${String(item.origIndex).padStart(2, '0')} // SLP ${currentLevel}</span>
+                                <span>[KLIKNI PRO OTOČENÍ]</span>
+                            </div>
+                            <div class="fc-term">${item.term}</div>
+                            <div class="fc-cz">${item.cz}</div>
+                            <div class="fc-example">"${item.ex}"</div>
+                        </div>
+                        <div class="fc-hint">EN ⇄ CZ</div>
+                    </div>
+                `;
+            });
+            gridHtml += `</div>`;
+
+            let paginationHtml = `
+                <div class="pagination-bar">
+                    <div>ZOBRAZENO: <strong>${pageItems.length}</strong> Z <strong>${filtered.length}</strong> POJMŮ (STRANA ${currentCardPage + 1} / ${totalPages})</div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-tactical" ${currentCardPage === 0 ? 'disabled' : ''} onclick="changeCardPage(-1)">◄ PŘEDCHOZÍ KARETNÍ SADA</button>
+                        <button class="btn-tactical" ${currentCardPage >= totalPages - 1 ? 'disabled' : ''} onclick="changeCardPage(1)">DALŠÍ KARETNÍ SADA ►</button>
+                    </div>
                 </div>
             `;
+
+            ws.innerHTML = toolbarHtml + gridHtml + paginationHtml;
+
+            const searchEl = ws.querySelector('.search-input');
+            if (document.activeElement && document.activeElement.classList.contains('search-input')) {
+                searchEl.focus();
+                searchEl.setSelectionRange(searchEl.value.length, searchEl.value.length);
+            }
         } else {
-            html += `
+            toolbarHtml += `</div>`;
+            const target = vocabList[currentVocabQuizIdx];
+
+            const distractors = vocabList
+                .filter((_, idx) => idx !== currentVocabQuizIdx)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 3)
+                .map(d => d.cz);
+
+            const options = [target.cz, ...distractors].sort(() => 0.5 - Math.random());
+            const correctIdx = options.indexOf(target.cz);
+
+            let quizHtml = `
                 <div class="question-box">
-                    <div class="question-meta">VOCABULARY DRILL // ${currentVocabIndex + 1} OF ${vocabList.length}</div>
-                    <div class="question-text">${item.q}</div>
+                    <div class="question-meta">VOCABULARY COMBAT DRILL // POJEM ${currentVocabQuizIdx + 1} Z ${vocabList.length}</div>
+                    <div class="question-text">Jaký je správný český význam vojenského pojmu: <span style="color:var(--bf-cyan);">${target.term}</span>?</div>
+                    <p style="color:var(--text-muted); margin-bottom:18px; font-style:italic;">Kontext: "${target.ex}"</p>
                     <div class="options-list">
-                        ${item.options.map((opt, idx) => `
-                            <button class="option-btn" onclick="checkAnswer(this, ${idx}, ${item.answer}, 'Pojem: <strong>${item.term}</strong> = ${item.cz}<br>Příklad: <em>${item.example}</em>')">
-                                [${String.fromCharCode(65 + idx)}]${opt}
+                        ${options.map((opt, idx) => `
+                            <button class="option-btn" onclick="checkAnswer(this, ${idx}, ${correctIdx}, '<strong>${target.term}</strong> = ${target.cz}<br>Příklad: <em>${target.ex}</em>')">
+                                [${String.fromCharCode(65 + idx)}] ${opt}
                             </button>
                         `).join('')}
                     </div>
                     <div class="feedback-box" id="feedback-box"></div>
                 </div>
-                <div class="action-bar">
-                    <span></span>
-                    <button class="btn-tactical" onclick="nextVocab(${vocabList.length})">DALŠÍ OTÁZKA ►</button>
+                <div class="pagination-bar">
+                    <span>Procvičujete všech 52 pojmů kapitoly STANAG ${currentLevel}.</span>
+                    <button class="btn-tactical" onclick="nextVocabQuiz(${vocabList.length})">DALŠÍ SLOVÍČKO ►</button>
                 </div>
             `;
+            ws.innerHTML = toolbarHtml + quizHtml;
         }
-        ws.innerHTML = html;
     }
 
-    function nextVocab(total) {
-        currentVocabIndex = (currentVocabIndex + 1) % total;
+    function changeCardPage(delta) {
+        currentCardPage += delta;
+        allPageFlipped = false;
         renderWorkspace();
     }
 
-    // --- ČTENÍ S POROZUMĚNÍM ---
+    function nextVocabQuiz(total) {
+        currentVocabQuizIdx = (currentVocabQuizIdx + 1) % total;
+        renderWorkspace();
+    }
+
+    // =========================================================================
+    // ČTENÍ S POROZUMĚNÍM A GRAMATIKA
+    // =========================================================================
     function renderReading(ws, readingData) {
         const qItem = readingData.questions[currentReadingQIndex];
         ws.innerHTML = `
@@ -1051,14 +1220,14 @@
                 <div class="options-list">
                     ${qItem.options.map((opt, idx) => `
                         <button class="option-btn" onclick="checkAnswer(this, ${idx}, ${qItem.answer}, '${qItem.explanation.replace(/'/g, "\\'")}')">
-                            [${String.fromCharCode(65 + idx)}]${opt}
+                            [${String.fromCharCode(65 + idx)}] ${opt}
                         </button>
                     `).join('')}
                 </div>
                 <div class="feedback-box" id="feedback-box"></div>
             </div>
-            <div class="action-bar">
-                <span>Přečtěte si depeši a odpovězte na otázku.</span>
+            <div class="pagination-bar">
+                <span>Přečtěte si vojenské hlášení a zvolte správnou odpověď.</span>
                 <button class="btn-tactical" onclick="nextReadingQ(${readingData.questions.length})">DALŠÍ OTÁZKA ►</button>
             </div>
         `;
@@ -1069,7 +1238,6 @@
         renderWorkspace();
     }
 
-    // --- TRÉNINK GRAMATIKY ---
     function renderGrammar(ws, grammarList) {
         const item = grammarList[currentGrammarIndex];
         ws.innerHTML = `
@@ -1079,14 +1247,14 @@
                 <div class="options-list">
                     ${item.options.map((opt, idx) => `
                         <button class="option-btn" onclick="checkAnswer(this, ${idx}, ${item.answer}, '${item.explanation.replace(/'/g, "\\'")}')">
-                            [${String.fromCharCode(65 + idx)}]${opt}
+                            [${String.fromCharCode(65 + idx)}] ${opt}
                         </button>
                     `).join('')}
                 </div>
                 <div class="feedback-box" id="feedback-box"></div>
             </div>
-            <div class="action-bar">
-                <span>Zvolte gramaticky správnou variantu pro danou úroveň STANAG.</span>
+            <div class="pagination-bar">
+                <span>Zvolte gramaticky správnou variantu odpovídající úrovni STANAG ${currentLevel}.</span>
                 <button class="btn-tactical" onclick="nextGrammar(${grammarList.length})">DALŠÍ ÚLOHA ►</button>
             </div>
         `;
@@ -1097,9 +1265,9 @@
         renderWorkspace();
     }
 
-    // --- KONTROLA ODPOVĚDI ---
     function checkAnswer(btn, selectedIdx, correctIdx, explanationHtml) {
         const buttons = document.querySelectorAll('.option-btn');
+        buttons.header = true;
         buttons.forEach(b => b.disabled = true);
 
         const fb = document.getElementById('feedback-box');
@@ -1107,23 +1275,15 @@
 
         if (selectedIdx === correctIdx) {
             btn.classList.add('correct');
-            score += 100 * currentLevel;
-            streak += 1;
             fb.style.borderColor = 'var(--bf-green)';
             fb.innerHTML = `<strong style="color:var(--bf-green);">[TARGET HIT // SPRÁVNĚ]</strong><br>${explanationHtml}`;
         } else {
             btn.classList.add('wrong');
             buttons[correctIdx].classList.add('correct');
-            streak = 0;
             fb.style.borderColor = 'var(--bf-red)';
             fb.innerHTML = `<strong style="color:var(--bf-red);">[MISSED // CHYBA]</strong><br>${explanationHtml}`;
         }
-
-        updateHUD();
     }
-
-    // Inicializace při načtení
-    renderWorkspace();
 </script>
 
 </body>
